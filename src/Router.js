@@ -38,11 +38,7 @@ const Router = {
     }
 
     if (isAuthenticated) {
-      const { accessLevel, isFirstLogin } = Auth.currentUser;
-      if (isFirstLogin && !["/guest-guide", "/host-guide"].includes(path)) {
-        gotoRoute(accessLevel === 1 ? "/guest-guide" : "/host-guide");
-        return;
-      }
+      const { accessLevel } = Auth.currentUser;
       if (path === "/guest-guide" && accessLevel !== 1) {
         gotoRoute("/host-home");
         return;
