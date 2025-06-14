@@ -6,9 +6,9 @@ import App from "./App.js";
 
 const Auth = {
   currentUser: null,
-  async signIn({ email, password }) {
+  async SignIn({ email, password }) {
     try {
-      const response = await fetch(`${App.apiBase}/auth/signin`, {
+      const response = await fetch(`${App.apiBase}/auth/SignIn`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -32,7 +32,7 @@ const Auth = {
       throw err;
     }
   },
-  async signUp({ firstName, lastName, email, password, accessLevel }) {
+  async SignUp({ firstName, lastName, email, password, accessLevel }) {
     try {
       const response = await fetch(`${App.apiBase}/users`, {
         method: "POST",
@@ -47,7 +47,7 @@ const Auth = {
       });
       if (!response.ok) throw new Error((await response.json()).message);
       Toast.show("Account created! Please sign in.");
-      gotoRoute("/signin");
+      gotoRoute("/SignIn");
     } catch (err) {
       Toast.show(err.message || "Sign-up failed");
       throw err;
@@ -73,7 +73,7 @@ const Auth = {
     localStorage.removeItem("token");
     this.currentUser = null;
     Toast.show("Signed out");
-    gotoRoute("/signin");
+    gotoRoute("/SignIn");
   },
 };
 

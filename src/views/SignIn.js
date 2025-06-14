@@ -1,4 +1,4 @@
-// views/signin.js
+// views/SignIn.js
 
 import { html, render } from "lit-html";
 import App from "../App.js";
@@ -27,7 +27,7 @@ class SignInView {
     const password = form.querySelector('[name="password"]').value;
 
     try {
-      await Auth.signIn({ email, password });
+      await Auth.SignIn({ email, password });
     } catch (err) {
       this.loading = false;
       this.render();
@@ -68,10 +68,10 @@ class SignInView {
           <p>
             Don't have an account?
             <a
-              href="/signup"
+              href="/SignUp"
               @click=${(e) => {
                 e.preventDefault();
-                gotoRoute("/signup");
+                gotoRoute("/SignUp");
               }}
               aria-label="Go to Sign Up"
             >

@@ -32,8 +32,8 @@ const Router = {
     const view = this.routes[path] || SignInView;
     const isAuthenticated = await Auth.check();
 
-    if (!isAuthenticated && !["/signin", "/signup"].includes(path)) {
-      gotoRoute("/signin");
+    if (!isAuthenticated && !["/SignIn", "/SignUp"].includes(path)) {
+      gotoRoute("/SignIn");
       return;
     }
 

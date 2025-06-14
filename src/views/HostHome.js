@@ -11,8 +11,8 @@ import Auth from "./Auth.js";
 
 const Router = {
   routes: {
-    "/signin": SignInView,
-    "/signup": SignUpView,
+    "/SignIn": SignInView,
+    "/SignUp": SignUpView,
     "/guest-guide": GuestGuideView,
     "/host-guide": HostGuideView,
     "/profile": ProfileView,
@@ -30,8 +30,8 @@ const Router = {
     const view = this.routes[path] || SignInView;
     const isAuthenticated = await Auth.check();
 
-    if (!isAuthenticated && !["/signin", "/signup"].includes(path)) {
-      gotoRoute("/signin");
+    if (!isAuthenticated && !["/SignIn", "/SignUp"].includes(path)) {
+      gotoRoute("/SignIn");
       return;
     }
 
