@@ -1,67 +1,99 @@
 // Auth.js
 
-const express = require("express");
-const router = express.Router();
-const User = require("../models/User");
-const jwt = require("jsonwebtoken");
-const Utils = require("../Utils");
+import { gotoRoute } from "./Router.js";
+import Toast from "./Toast.js";
+import App from "./App.js";
 
-router.post("/signin", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-    const isMatch = await Utils.comparePassword(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
-    }
-    const accessToken = jwt.sign(
-      { user: { id: user._id, accessLevel: user.accessLevel } },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "1d" }
-    );
-    res.json({
-      accessToken,
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        accessLevel: user.accessLevel,
-        isFirstLogin: user.isFirstLogin,
-      },
-    });
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err });
-  }
-});
+const Auth = {
+  currentUser: null,
 
-router.get("/validate", async (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ message: "No token provided" });
-  }
-  try {
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    const user = await User.findById(decoded.user.id).select("-password");
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+  async signIn({ email, password }) {
+    try {
+      const response = await fetch(`${App.apiBase}/api/auth/signin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Sign-in failed");
+      }
+      const { accessToken, user } = await response.json();
+      localStorage.setItem("token", accessToken);
+      this.currentUser = user;
+      Toast.show(`Welcome back, ${user.firstName}!`);
+      const redirectPath = user.isFirstLogin
+        ? user.accessLevel === 1
+          ? "/guest-guide"
+          : "/host-guide"
+        : user.accessLevel === 1
+        ? "/guest-home"
+        : "/host-home";
+      gotoRoute(redirectPath);
+    } catch (err) {
+      Toast.show(
+        err.message || "Failed to sign in. Please check your connection."
+      );
+      throw err;
     }
-    res.json({
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        accessLevel: user.accessLevel,
-        isFirstLogin: user.isFirstLogin,
-      },
-    });
-  } catch (err) {
-    res.status(401).json({ message: "Invalid token" });
-  }
-});
+  },
 
-module.exports = router;
+  async signUp({ firstName, lastName, email, password, accessLevel }) {
+    try {
+      const response = await fetch(`${App.apiBase}/api/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          password,
+          accessLevel,
+        }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Sign-up failed");
+      }
+      Toast.show("Account created! Please sign in.");
+      gotoRoute("/signin");
+    } catch (err) {
+      Toast.show(
+        err.message || "Failed to sign up. Please check your connection."
+      );
+      throw err;
+    }
+  },
+
+  async check() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      this.currentUser = null;
+      return false;
+    }
+    try {
+      const response = await fetch(`${App.apiBase}/api/auth/validate`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        throw new Error("Invalid token");
+      }
+      this.currentUser = (await response.json()).user;
+      return true;
+    } catch (err) {
+      console.warn("[Auth] Failed to validate session:", err.message);
+      localStorage.removeItem("token");
+      this.currentUser = null;
+      return false;
+    }
+  },
+
+  signOut() {
+    localStorage.removeItem("token");
+    this.currentUser = null;
+    Toast.show("Signed out successfully");
+    gotoRoute("/signin");
+  },
+};
+
+export default Auth;

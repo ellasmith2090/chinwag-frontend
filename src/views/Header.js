@@ -1,15 +1,15 @@
 // router.js
 
-import SignInView from "./views/SignIn.js";
-import SignUpView from "./views/SignUp.js";
-import GuestGuideView from "./views/GuestGuide.js";
-import HostGuideView from "./views/HostGuide.js";
+import SignInView from "./SignInView.js";
+import SignUpView from "./SignUp.js";
+import GuestGuideView from "./GuestGuide.js";
+import HostGuideView from "./HostGuide.js";
 import ProfileView from "./views/Profile.js";
-import GuestHomeView from "./views/GuestHome.js";
-import HostHomeView from "./views/HostHome.js";
-import GuestBookingsView from "./views/GuestBookings.js";
-import HostBookingsView from "./views/HostBookings.js";
-import Auth from "./Auth.js";
+import GuestHomeView from "./GuestHome.js";
+import HostHomeView from "./HostHome.js";
+import GuestBookingsView from "./GuestBookings.js";
+import HostBookingsView from "./HostBookings.js";
+import Auth from "../Auth.js";
 
 const Router = {
   routes: {
