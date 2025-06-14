@@ -1,6 +1,6 @@
 // router.js
 
-import SignInView from "./views/SignIn.js";
+import SignInView from "./views/Signin.js";
 import SignUpView from "./views/SignUp.js";
 import GuestGuideView from "./views/GuestGuide.js";
 import HostGuideView from "./views/HostGuide.js";
