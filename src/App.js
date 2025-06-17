@@ -1,9 +1,12 @@
-// App.js
-
 import Router from "./Router.js";
 
 const App = {
-  apiBase: "https://chinwag-backend.onrender.com/api",
+  // Switch base URL depending on environment
+  apiBase:
+    window.location.hostname === "localhost"
+      ? "http://localhost:3000/api"
+      : "https://chinwag-backend.onrender.com/api",
+
   rootEl: null,
 
   async init() {
