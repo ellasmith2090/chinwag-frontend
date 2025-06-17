@@ -1,45 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chinwag</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;700&display=swap" rel="stylesheet" />
-
-  <!-- Shoelace Theme (Light) -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.17.1/dist/themes/light.css"
-  />
-
-  <!-- Shoelace Web Components -->
-  <script
-    type="module"
-    src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.17.1/dist/shoelace.js"
-  ></script>
-
-  <!-- Preload Images -->
-  <link rel="preload" href="../images/header.png" as="image" />
-  <link rel="preload" href="../images/default-event.png" as="image" />
-  <link rel="preload" href="../images/default-avatar.png" as="image" />
-
-  <!-- Verify Shoelace Initialization -->
-  <script type="module">
-    window.addEventListener("DOMContentLoaded", () => {
-      console.log("[Index] Shoelace loaded, checking custom elements");
-      if (!customElements.get("sl-input")) {
-        console.error("[Index] Shoelace not initialized");
-      } else {
-        console.log("[Index] Shoelace initialized successfully");
-      }
-    });
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles/main.scss">
 </head>
 <body>
   <div id="root"></div>
-
-  <!-- Main App -->
   <script type="module" src="./main.js"></script>
 </body>
 </html>
