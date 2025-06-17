@@ -63,8 +63,19 @@ const Auth = {
         throw new Error(error.message || "Sign-up failed");
       }
 
-      Toast.show("Account created! Please sign in.");
-      gotoRoute("/signin");
+      const { accessToken, user } = await response.json();
+      localStorage.setItem("token", accessToken);
+      this.currentUser = user;
+
+      Toast.show(`Welcome, ${user.firstName}!`);
+      const redirectPath = user.isFirstLogin
+        ? user.accessLevel === 1
+          ? "/guest-guide"
+          : "/host-guide"
+        : user.accessLevel === 1
+        ? "/guest-home"
+        : "/host-home";
+      gotoRoute(redirectPath);
     } catch (err) {
       Toast.show(
         err.message || "Failed to sign up. Please check your connection."
