@@ -1321,8 +1321,26 @@ const Auth = {
 exports.default = Auth;
 
 },{"./Router.js":"b5tFI","./Toast.js":"8c3DX","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8c3DX":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _litHtml = require("lit-html");
+const toastContainer = document.createElement("div");
+toastContainer.className = "toast-container";
+document.body.appendChild(toastContainer);
+const Toast = {
+    show (message, variant = "primary", duration = 3000) {
+        const alert = document.createElement("sl-alert");
+        alert.variant = variant;
+        alert.duration = duration;
+        alert.closable = true;
+        alert.innerHTML = message;
+        (0, _litHtml.render)((0, _litHtml.html)`${alert}`, toastContainer);
+        alert.toast();
+    }
+};
+exports.default = Toast;
 
-},{}],"jPeMQ":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jPeMQ":[function(require,module,exports,__globalThis) {
 // views/signup.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
