@@ -1,7 +1,5 @@
 // Auth.js
 
-// Auth.js
-
 import { gotoRoute } from "./Router.js";
 import Toast from "./Toast.js";
 import App from "./App.js";

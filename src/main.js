@@ -1,7 +1,7 @@
 //main.js
 
-// main.js
 import "./styles/main.scss";
+import "@shoelace-style/shoelace/dist/shoelace.js"; // Import local Shoelace
 import App from "./App.js";
 
 // Clear rootEl and log
