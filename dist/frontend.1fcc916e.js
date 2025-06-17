@@ -691,10 +691,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _routerJs = require("./Router.js");
 var _routerJsDefault = parcelHelpers.interopDefault(_routerJs);
-const isLocal = window.location.hostname === "localhost";
 const App = {
-    apiBase: isLocal ? "http://localhost:3000" : "https://chinwag-backend.onrender.com",
-    rootEl: null,
+    apiBase: "https://chinwag-backend.onrender.com",
     async init () {
         this.rootEl = document.getElementById("root");
         if (!this.rootEl) throw new Error("Root element #root not found");
