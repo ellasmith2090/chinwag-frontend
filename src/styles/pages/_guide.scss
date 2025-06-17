@@ -1,0 +1,117 @@
+// styles/pages/_guide.scss
+
+@use "../abstracts/variables" as vars;
+
+.guide-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: vars.$secondary;
+}
+
+.guide-header {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+}
+
+.guide-content {
+  flex: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+.guide-text-block {
+  margin-bottom: 40px;
+}
+
+.guide-title {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  color: vars.$text-color;
+  font-family: vars.$font-title;
+}
+
+.guide-subtitle,
+.guide-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: vars.$grey-dark;
+  font-family: vars.$font-body;
+}
+
+.guide-heading {
+  font-size: 1.8rem;
+  margin: 20px 0 10px;
+  color: vars.$text-color;
+  font-family: vars.$font-heading;
+}
+
+.guide-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+  padding: 20px;
+  background-size: cover;
+  background-position: center;
+}
+
+.guide-card {
+  background: vars.$white;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: left;
+  box-shadow: 0 2px 8px vars.$shadow-light;
+}
+
+.guide-card h4 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+  color: vars.$text-color;
+  font-family: vars.$font-heading;
+}
+
+.guide-card p {
+  margin: 0;
+  color: vars.$grey-dark;
+  font-family: vars.$font-body;
+}
+
+.guide-cta {
+  margin: 20px 0;
+}
+
+.guide-footer {
+  height: 100px;
+  background-size: cover;
+  background-position: center;
+}
+
+@media (max-width: vars.$bp-mobile) {
+  .guide-header {
+    height: 150px;
+  }
+
+  .guide-content {
+    padding: 15px;
+  }
+
+  .guide-title {
+    font-size: 2rem;
+  }
+
+  .guide-heading {
+    font-size: 1.5rem;
+  }
+
+  .guide-features {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-footer {
+    height: 80px;
+  }
+}

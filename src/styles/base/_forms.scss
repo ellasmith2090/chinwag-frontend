@@ -1,0 +1,88 @@
+// styles/base/_forms
+
+@use "../abstracts/variables" as vars;
+
+sl-input::part(base) {
+  background-color: vars.$white;
+  border: 1px solid vars.$grey-light;
+  border-radius: 0.5rem;
+  font-family: vars.$font-body;
+  font-size: 1rem;
+  box-shadow: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+sl-input::part(base):focus-within {
+  border-color: vars.$primary;
+  box-shadow: 0 0 0 2px rgba(56, 87, 135, 0.1);
+}
+
+sl-input.compact::part(base) {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.95rem;
+}
+
+sl-input.error::part(base) {
+  border-color: vars.$error;
+  box-shadow: 0 0 0 2px vars.$error-light;
+}
+
+sl-input::part(label) {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: vars.$font-heading;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: vars.$text-color;
+}
+
+.form-wrapper {
+  width: 100%;
+  max-width: 400px;
+  background: vars.$white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px vars.$shadow-light;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  sl-input,
+  sl-radio-group {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    text-align: center;
+    margin-top: 15px;
+  }
+
+  a {
+    color: vars.$primary;
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .radio-label {
+    text-align: center;
+    font-family: vars.$font-heading;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  sl-radio-group::part(base) {
+    justify-content: center;
+  }
+}

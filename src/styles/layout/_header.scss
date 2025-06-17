@@ -1,12 +1,14 @@
-// styles/header.scss
+// styles/layout/header.scss
+
+@use "../abstracts/variables" as vars;
 
 .site-header {
   background-image: url("../images/header.png");
   background-size: cover;
   background-position: center;
-  color: white;
+  color: vars.$white;
   padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px vars.$shadow-light;
 }
 
 .header-content {
@@ -24,7 +26,7 @@
 }
 
 .nav-tabs {
-  --sl-color-primary-600: #ffffff;
+  --sl-color-primary-600: vars.$white;
   --sl-color-neutral-0: transparent;
 }
 
@@ -37,64 +39,11 @@
 }
 
 sl-tab {
-  color: white;
+  color: vars.$white;
   padding: 10px 20px;
   cursor: pointer;
 }
 
 sl-tab:hover {
   background-color: rgba(255, 255, 255, 0.1);
-}
-
-.page-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.page-centered {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: calc(100vh - 80px);
-  padding: 20px;
-}
-
-.form-wrapper {
-  width: 100%;
-  max-width: 400px;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.form-wrapper form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.form-wrapper sl-input,
-.form-wrapper sl-radio-group {
-  width: 100%;
-}
-
-.form-wrapper sl-button {
-  margin-top: 10px;
-}
-
-.form-wrapper p {
-  text-align: center;
-  margin-top: 15px;
-}
-
-.form-wrapper a {
-  color: var(--sl-color-primary-600);
-  text-decoration: none;
-}
-
-.form-wrapper a:hover {
-  text-decoration: underline;
 }

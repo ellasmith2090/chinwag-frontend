@@ -1,0 +1,56 @@
+// abstracts/_mixins.scss
+@use "../abstracts/variables";
+
+// ---------------------------
+// Font Mixins
+// ---------------------------
+@mixin font-title {
+  font-family: "Neo Contact", serif;
+}
+
+@mixin font-heading {
+  font-family: "Barlow Semi Condensed", sans-serif;
+}
+
+@mixin font-body {
+  font-family: "Helvetica World", sans-serif;
+}
+
+// ---------------------------
+// Responsive Breakpoints
+// ---------------------------
+@mixin respond($breakpoint) {
+  @if $breakpoint == mobile {
+    @media (max-width: 768px) {
+      @content;
+    }
+  } @else if $breakpoint == tablet {
+    @media (max-width: 1024px) {
+      @content;
+    }
+  } @else if $breakpoint == desktop {
+    @media (min-width: 1025px) {
+      @content;
+    }
+  }
+}
+
+// ---------------------------
+// Utility Spacing
+// ---------------------------
+@mixin section-spacing {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+}
+
+// ---------------------------
+// Button Reset
+// ---------------------------
+@mixin button-reset {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}

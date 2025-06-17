@@ -1,0 +1,42 @@
+// styles/components/_carousel.scss
+
+@use "../abstracts/variables" as vars;
+
+sl-carousel {
+  --slide-gap: 20px;
+  display: flex;
+  padding: 4rem;
+}
+
+sl-carousel::part(slide) {
+  display: flex;
+  justify-content: center;
+}
+
+.event-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 2rem;
+  padding: 4rem;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: vars.$grey-light;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  @media (max-width: vars.$bp-mobile) {
+    padding: 3rem 2rem;
+    gap: 1rem;
+  }
+}

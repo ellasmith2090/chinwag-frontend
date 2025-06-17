@@ -1,0 +1,54 @@
+// styles/vendors/shoelace.scss
+
+@use "../abstracts/variables" as vars;
+
+sl-button::part(base) {
+  background-color: vars.$text-color;
+  color: vars.$white;
+  font-family: vars.$font-heading;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 4px 10px vars.$shadow-medium;
+  margin-top: 1rem;
+
+  &:hover {
+    background-color: #444;
+  }
+
+  &:active {
+    background-color: vars.$primary;
+  }
+}
+
+sl-button.primary::part(base) {
+  background-color: vars.$primary;
+  --sl-input-height-medium: 48px;
+  font-size: 1.1rem;
+  font-weight: 500;
+
+  &:hover {
+    background-color: darken(vars.$primary, 10%);
+  }
+}
+
+.button-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+
+  sl-button {
+    width: 100%;
+    max-width: 300px;
+  }
+}

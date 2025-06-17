@@ -1,0 +1,29 @@
+// styles/components/dialog
+
+@use "../abstracts/variables" as vars;
+
+sl-dialog::part(panel) {
+  max-width: 600px;
+  border-radius: 8px;
+  background: vars.$white;
+  box-shadow: 0 4px 16px vars.$shadow-medium;
+}
+
+sl-dialog::part(title) {
+  font-family: vars.$font-heading;
+  color: vars.$primary;
+  font-size: 1.5rem;
+}
+
+sl-dialog::part(body) {
+  font-family: vars.$font-body;
+  color: vars.$text-color;
+  padding: 1.5rem;
+}
+
+sl-dialog::part(footer) {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 1rem;
+}

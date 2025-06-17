@@ -1,0 +1,32 @@
+// Controls Bar
+
+@use "../abstracts/variables" as vars;
+
+.tab-bar {
+  overflow-x: auto;
+
+  .tab {
+    font-family: vars.$font-heading;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    padding-bottom: 0.5rem;
+    transition: all 0.3s ease;
+
+    &.active {
+      color: vars.$primary;
+      border-color: vars.$primary;
+    }
+
+    &:hover {
+      color: vars.$primary;
+      opacity: 0.8;
+    }
+  }
+}
