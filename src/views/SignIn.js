@@ -16,7 +16,10 @@ class SignInView {
     if (process.env.NODE_ENV === "development") {
       console.log("[SignInView] init() called");
     }
-    this.render();
+
+    App.rootEl.innerHTML = `<p>Loading sign in form...</p>`;
+    // Wait to ensure Shoelace elements are registered
+    setTimeout(() => this.render(), 0);
   }
 
   async submitHandler(e) {
@@ -42,16 +45,21 @@ class SignInView {
       Toast.show("✅ Signed in successfully!", "success");
 
       const user = Auth.currentUser;
-      if (user.isFirstLogin) {
-        gotoRoute(user.accessLevel === 1 ? "/guest-guide" : "/host-guide");
-      } else {
-        gotoRoute(user.accessLevel === 1 ? "/guest-home" : "/host-home");
-      }
+      gotoRoute(
+        user.isFirstLogin
+          ? user.accessLevel === 1
+            ? "/guest-guide"
+            : "/host-guide"
+          : user.accessLevel === 1
+          ? "/guest-home"
+          : "/host-home"
+      );
     } catch (err) {
       this.loading = false;
       if (process.env.NODE_ENV === "development") {
         console.error("[SignInView] Login error:", err);
       }
+
       if (err.status === 404) {
         Toast.show("No account found. Redirecting to Sign Up...", "warning");
         setTimeout(() => gotoRoute("/signup"), 2000);
@@ -71,7 +79,7 @@ class SignInView {
     if (process.env.NODE_ENV === "development") {
       console.log("[SignInView] render() called");
     }
-    App.rootEl.innerHTML = ""; // Clear any previous content
+
     const template = html`
       <div class="page-content page-centered" role="main">
         <h1>Sign In</h1>
@@ -82,17 +90,19 @@ class SignInView {
               type="email"
               label="Email"
               required
-              aria-required="true"
               autocomplete="email"
+              aria-required="true"
             ></sl-input>
+
             <sl-input
               name="password"
               type="password"
               label="Password"
               required
-              aria-required="true"
               autocomplete="current-password"
+              aria-required="true"
             ></sl-input>
+
             <sl-button
               type="submit"
               variant="primary"
@@ -113,7 +123,9 @@ class SignInView {
         </div>
       </div>
     `;
-    render(template, App.rootEl);
+
+    // Defer rendering to ensure Shoelace is fully ready
+    setTimeout(() => render(template, App.rootEl), 0);
   }
 }
 

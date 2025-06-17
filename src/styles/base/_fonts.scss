@@ -1,0 +1,19 @@
+// abstracts/_fonts.scss or base/_fonts.scss
+
+// Local font: Helvetica World
+@font-face {
+  font-family: "Helvetica World";
+  src: url("../fonts/helvetica-world-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+// Local font: Neo Contact
+@font-face {
+  font-family: "Neo Contact";
+  src: url("../fonts/NeoContact.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

@@ -669,8 +669,8 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 },{}],"fILKw":[function(require,module,exports,__globalThis) {
 //main.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+var _shoelaceJs = require("@shoelace-style/shoelace/dist/shoelace.js");
 var _mainScss = require("./styles/main.scss");
-var _shoelaceJs = require("@shoelace-style/shoelace/dist/shoelace.js"); // Import local Shoelace
 var _appJs = require("./App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 // Clear rootEl and log
@@ -822,7 +822,9 @@ class SignInView {
     init() {
         document.title = "Sign In - Chinwag";
         console.log("[SignInView] init() called");
-        this.render();
+        (0, _appJsDefault.default).rootEl.innerHTML = `<p>Loading sign in form...</p>`;
+        // Wait to ensure Shoelace elements are registered
+        setTimeout(()=>this.render(), 0);
     }
     async submitHandler(e) {
         e.preventDefault();
@@ -846,8 +848,7 @@ class SignInView {
             });
             (0, _toastJsDefault.default).show("\u2705 Signed in successfully!", "success");
             const user = (0, _authJsDefault.default).currentUser;
-            if (user.isFirstLogin) (0, _routerJs.gotoRoute)(user.accessLevel === 1 ? "/guest-guide" : "/host-guide");
-            else (0, _routerJs.gotoRoute)(user.accessLevel === 1 ? "/guest-home" : "/host-home");
+            (0, _routerJs.gotoRoute)(user.isFirstLogin ? user.accessLevel === 1 ? "/guest-guide" : "/host-guide" : user.accessLevel === 1 ? "/guest-home" : "/host-home");
         } catch (err) {
             this.loading = false;
             console.error("[SignInView] Login error:", err);
@@ -861,7 +862,6 @@ class SignInView {
     }
     render() {
         console.log("[SignInView] render() called");
-        (0, _appJsDefault.default).rootEl.innerHTML = ""; // Clear any previous content
         const template = (0, _litHtml.html)`
       <div class="page-content page-centered" role="main">
         <h1>Sign In</h1>
@@ -872,17 +872,19 @@ class SignInView {
               type="email"
               label="Email"
               required
-              aria-required="true"
               autocomplete="email"
+              aria-required="true"
             ></sl-input>
+
             <sl-input
               name="password"
               type="password"
               label="Password"
               required
-              aria-required="true"
               autocomplete="current-password"
+              aria-required="true"
             ></sl-input>
+
             <sl-button
               type="submit"
               variant="primary"
@@ -903,7 +905,8 @@ class SignInView {
         </div>
       </div>
     `;
-        (0, _litHtml.render)(template, (0, _appJsDefault.default).rootEl);
+        // Defer rendering to ensure Shoelace is fully ready
+        setTimeout(()=>(0, _litHtml.render)(template, (0, _appJsDefault.default).rootEl), 0);
     }
 }
 exports.default = new SignInView();

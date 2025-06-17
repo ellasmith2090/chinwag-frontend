@@ -1,3 +1,19 @@
+@font-face {
+  font-family: Helvetica World;
+  src: url("helvetica-world-regular.396bbb22.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Neo Contact;
+  src: url("NeoContact.ae06d63c.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 main-layout {
   width: 100%;
   display: block;

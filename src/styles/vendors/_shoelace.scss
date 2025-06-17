@@ -36,7 +36,7 @@ sl-button.primary::part(base) {
   font-weight: 500;
 
   &:hover {
-    background-color: color.adjust(vars.$primary, $lightness: -10%);
+    background-color: darken(vars.$primary, 10%);
   }
 }
 
