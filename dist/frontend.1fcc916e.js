@@ -1222,6 +1222,7 @@ exports.export = function(dest, destName, get) {
 };
 
 },{}],"aJFb5":[function(require,module,exports,__globalThis) {
+// auth.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _routerJs = require("./Router.js");
