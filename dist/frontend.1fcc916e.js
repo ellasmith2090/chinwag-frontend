@@ -669,6 +669,7 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 },{}],"fILKw":[function(require,module,exports,__globalThis) {
 //main.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+var _mainScss = require("./styles/main.scss"); // Import SCSS for Parcel to bundle
 var _appJs = require("./App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 // Optional: show a quick loading message
@@ -681,11 +682,30 @@ document.getElementById("root").innerHTML = "<p>Loading Chinwag...</p>";
     console.error("[main.js] App init failed:", err);
 });
 
-},{"./Router.js":"b5tFI","./Toast.js":"8c3DX","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"b5tFI":[function(require,module,exports,__globalThis) {
+},{"./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","./styles/main.scss":"bo7w8"}],"hh6uc":[function(require,module,exports,__globalThis) {
+// App.js
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _routerJs = require("./Router.js");
+var _routerJsDefault = parcelHelpers.interopDefault(_routerJs);
+const App = {
+    apiBase: "http://localhost:3000",
+    rootEl: null,
+    async init () {
+        this.rootEl = document.getElementById("root");
+        if (!this.rootEl) throw new Error("Root element #root not found");
+        console.log("[App] Initialising...");
+        await (0, _routerJsDefault.default).init();
+    }
+};
+exports.default = App;
+
+},{"./Router.js":"b5tFI","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"b5tFI":[function(require,module,exports,__globalThis) {
 // router.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "gotoRoute", ()=>gotoRoute);
+parcelHelpers.export(exports, "anchorRoute", ()=>anchorRoute);
 var _signInJs = require("./views/SignIn.js");
 var _signInJsDefault = parcelHelpers.interopDefault(_signInJs);
 var _signUpJs = require("./views/SignUp.js");
@@ -765,13 +785,22 @@ const Router = {
     }
 };
 function gotoRoute(path) {
+    console.log("[Router] Navigating to:", path);
     history.pushState({}, "", path);
     Router.route();
 }
+function anchorRoute(e) {
+    e.preventDefault();
+    const path = e.currentTarget.getAttribute("href");
+    if (path) {
+        console.log("[Router] Anchor route to:", path);
+        gotoRoute(path);
+    }
+}
 exports.default = Router;
 
-},{"./views/SignUp.js":"jPeMQ","./views/GuestGuide.js":"fdhWh","./views/HostGuide.js":"Kckvv","./views/Profile.js":"2fU3z","./views/GuestHome.js":"kXOFZ","./views/HostHome.js":"d2S5w","./views/GuestBookings.js":"66jdU","./views/HostBookings.js":"bmUJu","./Auth.js":"aJFb5","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","./views/SignIn.js":"85knE"}],"jPeMQ":[function(require,module,exports,__globalThis) {
-// views/signup.js
+},{"./views/SignIn.js":"85knE","./views/SignUp.js":"jPeMQ","./views/GuestGuide.js":"fdhWh","./views/HostGuide.js":"Kckvv","./views/Profile.js":"2fU3z","./views/GuestHome.js":"kXOFZ","./views/HostHome.js":"d2S5w","./views/GuestBookings.js":"66jdU","./views/HostBookings.js":"bmUJu","./Auth.js":"aJFb5","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"85knE":[function(require,module,exports,__globalThis) {
+// views/SignIn.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _litHtml = require("lit-html");
@@ -782,71 +811,57 @@ var _authJsDefault = parcelHelpers.interopDefault(_authJs);
 var _routerJs = require("../Router.js");
 var _toastJs = require("../Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
-var _dompurify = require("dompurify");
-var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
-class SignUpView {
+class SignInView {
     constructor(){
         this.loading = false;
-        this.passwordMismatch = false;
     }
     init() {
-        document.title = "Sign Up - Chinwag";
+        document.title = "Sign In - Chinwag";
+        console.log("[SignInView] init() called");
         this.render();
     }
     async submitHandler(e) {
         e.preventDefault();
         if (this.loading) return;
         this.loading = true;
-        this.passwordMismatch = false;
+        this.render();
         const form = e.target;
-        const firstName = (0, _dompurifyDefault.default).sanitize(form.querySelector('[name="firstName"]').value.trim());
-        const lastName = (0, _dompurifyDefault.default).sanitize(form.querySelector('[name="lastName"]').value.trim());
-        const email = (0, _dompurifyDefault.default).sanitize(form.querySelector('[name="email"]').value.trim());
+        const email = form.querySelector('[name="email"]').value.trim();
         const password = form.querySelector('[name="password"]').value;
-        const confirmPassword = form.querySelector('[name="confirmPassword"]').value;
-        const accessLevel = parseInt(form.querySelector('[name="accessLevel"]').value);
-        if (password !== confirmPassword) {
-            this.passwordMismatch = true;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            (0, _toastJsDefault.default).show("\u26A0\uFE0F Please enter a valid email address.", "warning");
             this.loading = false;
             this.render();
-            (0, _toastJsDefault.default).show("Passwords do not match");
             return;
         }
         try {
-            await (0, _authJsDefault.default).signUp({
-                firstName,
-                lastName,
+            await (0, _authJsDefault.default).signIn({
                 email,
-                password,
-                accessLevel
+                password
             });
-            this.loading = false;
-            this.render();
+            (0, _toastJsDefault.default).show("\u2705 Signed in successfully!", "success");
+            const user = (0, _authJsDefault.default).currentUser;
+            if (user.isFirstLogin) (0, _routerJs.gotoRoute)(user.accessLevel === 1 ? "/guest-guide" : "/host-guide");
+            else (0, _routerJs.gotoRoute)(user.accessLevel === 1 ? "/guest-home" : "/host-home");
         } catch (err) {
             this.loading = false;
+            console.error("[SignInView] Login error:", err);
+            if (err.status === 404) {
+                (0, _toastJsDefault.default).show("No account found. Redirecting to Sign Up...", "warning");
+                setTimeout(()=>(0, _routerJs.gotoRoute)("/signup"), 2000);
+            } else if (err.status === 401) (0, _toastJsDefault.default).show("Incorrect password. Please try again.", "warning");
+            else (0, _toastJsDefault.default).show(`\u{274C} Login failed: ${err.message || "Unknown error"}`, "danger");
             this.render();
         }
     }
     render() {
+        console.log("[SignInView] render() called");
         const template = (0, _litHtml.html)`
       <div class="page-content page-centered" role="main">
-        <h1>Create Your Account</h1>
-        <div class="form-wrapper" aria-label="Sign Up Form">
+        <h1>Sign In</h1>
+        <div class="form-wrapper" aria-label="Sign In Form">
           <form @submit=${this.submitHandler.bind(this)}>
-            <sl-input
-              name="firstName"
-              label="First Name"
-              required
-              aria-required="true"
-              autocomplete="given-name"
-            ></sl-input>
-            <sl-input
-              name="lastName"
-              label="Last Name"
-              required
-              aria-required="true"
-              autocomplete="family-name"
-            ></sl-input>
             <sl-input
               name="email"
               type="email"
@@ -861,50 +876,23 @@ class SignUpView {
               label="Password"
               required
               aria-required="true"
-              autocomplete="new-password"
-              help-text=${this.passwordMismatch ? "Passwords do not match" : ""}
-              ?invalid=${this.passwordMismatch}
+              autocomplete="current-password"
             ></sl-input>
-            <sl-input
-              name="confirmPassword"
-              type="password"
-              label="Confirm Password"
-              required
-              aria-required="true"
-              autocomplete="new-password"
-              help-text=${this.passwordMismatch ? "Passwords do not match" : ""}
-              ?invalid=${this.passwordMismatch}
-            ></sl-input>
-            <sl-radio-group
-              name="accessLevel"
-              label="Register as"
-              required
-              aria-required="true"
-              value="1"
-            >
-              <sl-radio value="1">Guest</sl-radio>
-              <sl-radio value="2">Host</sl-radio>
-            </sl-radio-group>
             <sl-button
               type="submit"
               variant="primary"
+              class="primary"
               ?disabled=${this.loading}
               ?loading=${this.loading}
+              aria-label="Submit Sign In"
             >
-              Sign Up
+              Sign In
             </sl-button>
           </form>
           <p>
-            Already have an account?
-            <a
-              href="/signin"
-              @click=${(e)=>{
-            e.preventDefault();
-            (0, _routerJs.gotoRoute)("/signin");
-        }}
-              aria-label="Go to Sign In"
-            >
-              Sign In
+            Don't have an account?
+            <a href="/signup" @click=${(0, _routerJs.anchorRoute)} aria-label="Go to Sign Up">
+              Sign Up
             </a>
           </p>
         </div>
@@ -913,9 +901,9 @@ class SignUpView {
         (0, _litHtml.render)(template, (0, _appJsDefault.default).rootEl);
     }
 }
-exports.default = new SignUpView();
+exports.default = new SignInView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../Toast.js":"8c3DX","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"l15as":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../Toast.js":"8c3DX","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"l15as":[function(require,module,exports,__globalThis) {
 /**
  * @license
  * Copyright 2017 Google LLC
@@ -1227,25 +1215,7 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"hh6uc":[function(require,module,exports,__globalThis) {
-// App.js
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _routerJs = require("./Router.js");
-var _routerJsDefault = parcelHelpers.interopDefault(_routerJs);
-const App = {
-    apiBase: "http://localhost:3000",
-    rootEl: null,
-    async init () {
-        this.rootEl = document.getElementById("root");
-        if (!this.rootEl) throw new Error("Root element #root not found");
-        console.log("[App] Initialising...");
-        await (0, _routerJsDefault.default).init();
-    }
-};
-exports.default = App;
-
-},{"./Router.js":"b5tFI","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"aJFb5":[function(require,module,exports,__globalThis) {
+},{}],"aJFb5":[function(require,module,exports,__globalThis) {
 // Auth.js
 // Auth.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -1345,7 +1315,152 @@ exports.default = Auth;
 
 },{"./Router.js":"b5tFI","./Toast.js":"8c3DX","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8c3DX":[function(require,module,exports,__globalThis) {
 
-},{}],"1IHUz":[function(require,module,exports,__globalThis) {
+},{}],"jPeMQ":[function(require,module,exports,__globalThis) {
+// views/signup.js
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _litHtml = require("lit-html");
+var _appJs = require("../App.js");
+var _appJsDefault = parcelHelpers.interopDefault(_appJs);
+var _authJs = require("../Auth.js");
+var _authJsDefault = parcelHelpers.interopDefault(_authJs);
+var _routerJs = require("../Router.js");
+var _toastJs = require("../Toast.js");
+var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
+var _dompurify = require("dompurify");
+var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
+class SignUpView {
+    constructor(){
+        this.loading = false;
+        this.passwordMismatch = false;
+    }
+    init() {
+        document.title = "Sign Up - Chinwag";
+        this.render();
+    }
+    async submitHandler(e) {
+        e.preventDefault();
+        if (this.loading) return;
+        this.loading = true;
+        this.passwordMismatch = false;
+        const form = e.target;
+        const firstName = (0, _dompurifyDefault.default).sanitize(form.querySelector('[name="firstName"]').value.trim());
+        const lastName = (0, _dompurifyDefault.default).sanitize(form.querySelector('[name="lastName"]').value.trim());
+        const email = (0, _dompurifyDefault.default).sanitize(form.querySelector('[name="email"]').value.trim());
+        const password = form.querySelector('[name="password"]').value;
+        const confirmPassword = form.querySelector('[name="confirmPassword"]').value;
+        const accessLevel = parseInt(form.querySelector('[name="accessLevel"]').value);
+        if (password !== confirmPassword) {
+            this.passwordMismatch = true;
+            this.loading = false;
+            this.render();
+            (0, _toastJsDefault.default).show("Passwords do not match");
+            return;
+        }
+        try {
+            await (0, _authJsDefault.default).signUp({
+                firstName,
+                lastName,
+                email,
+                password,
+                accessLevel
+            });
+            this.loading = false;
+            this.render();
+        } catch (err) {
+            this.loading = false;
+            this.render();
+        }
+    }
+    render() {
+        const template = (0, _litHtml.html)`
+      <div class="page-content page-centered" role="main">
+        <h1>Create Your Account</h1>
+        <div class="form-wrapper" aria-label="Sign Up Form">
+          <form @submit=${this.submitHandler.bind(this)}>
+            <sl-input
+              name="firstName"
+              label="First Name"
+              required
+              aria-required="true"
+              autocomplete="given-name"
+            ></sl-input>
+            <sl-input
+              name="lastName"
+              label="Last Name"
+              required
+              aria-required="true"
+              autocomplete="family-name"
+            ></sl-input>
+            <sl-input
+              name="email"
+              type="email"
+              label="Email"
+              required
+              aria-required="true"
+              autocomplete="email"
+            ></sl-input>
+            <sl-input
+              name="password"
+              type="password"
+              label="Password"
+              required
+              aria-required="true"
+              autocomplete="new-password"
+              help-text=${this.passwordMismatch ? "Passwords do not match" : ""}
+              ?invalid=${this.passwordMismatch}
+            ></sl-input>
+            <sl-input
+              name="confirmPassword"
+              type="password"
+              label="Confirm Password"
+              required
+              aria-required="true"
+              autocomplete="new-password"
+              help-text=${this.passwordMismatch ? "Passwords do not match" : ""}
+              ?invalid=${this.passwordMismatch}
+            ></sl-input>
+            <sl-radio-group
+              name="accessLevel"
+              label="Register as"
+              required
+              aria-required="true"
+              value="1"
+            >
+              <sl-radio value="1">Guest</sl-radio>
+              <sl-radio value="2">Host</sl-radio>
+            </sl-radio-group>
+            <sl-button
+              type="submit"
+              variant="primary"
+              ?disabled=${this.loading}
+              ?loading=${this.loading}
+            >
+              Sign Up
+            </sl-button>
+          </form>
+          <p>
+            Already have an account?
+            <a
+              href="/signin"
+              @click=${(e)=>{
+            e.preventDefault();
+            (0, _routerJs.gotoRoute)("/signin");
+        }}
+              aria-label="Go to Sign In"
+            >
+              Sign In
+            </a>
+          </p>
+        </div>
+      </div>
+    `;
+        (0, _litHtml.render)(template, (0, _appJsDefault.default).rootEl);
+    }
+}
+exports.default = new SignUpView();
+
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../Toast.js":"8c3DX","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1IHUz":[function(require,module,exports,__globalThis) {
 /*! @license DOMPurify 3.2.6 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.2.6/LICENSE */ (function(global, factory) {
     module.exports = factory();
 })(this, function() {
@@ -3528,7 +3643,7 @@ class ProfileView {
 }
 exports.default = new ProfileView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","../components/Header.js":"3PJ6N"}],"3PJ6N":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3PJ6N":[function(require,module,exports,__globalThis) {
 // components/header.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -3693,7 +3808,7 @@ class GuestHomeView {
 }
 exports.default = new GuestHomeView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","../components/Header.js":"3PJ6N"}],"d2S5w":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"d2S5w":[function(require,module,exports,__globalThis) {
 // views/hosthome.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -3823,7 +3938,7 @@ class HostHomeView {
 }
 exports.default = new HostHomeView();
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","../Router.js":"b5tFI"}],"66jdU":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","../Router.js":"b5tFI","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"66jdU":[function(require,module,exports,__globalThis) {
 // views/GuestBookings.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -3995,7 +4110,7 @@ class GuestBookingsView {
 }
 exports.default = new GuestBookingsView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","../components/Header.js":"3PJ6N"}],"bmUJu":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bmUJu":[function(require,module,exports,__globalThis) {
 // views/HostBookings.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -4176,96 +4291,6 @@ class HostBookingsView {
 }
 exports.default = new HostBookingsView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","../components/Header.js":"3PJ6N"}],"85knE":[function(require,module,exports,__globalThis) {
-// views/SignIn.js
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _litHtml = require("lit-html");
-var _appJs = require("../App.js");
-var _appJsDefault = parcelHelpers.interopDefault(_appJs);
-var _authJs = require("../Auth.js");
-var _authJsDefault = parcelHelpers.interopDefault(_authJs);
-var _routerJs = require("../Router.js");
-var _toastJs = require("../Toast.js");
-var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
-class SignInView {
-    constructor(){
-        this.loading = false;
-    }
-    init() {
-        document.title = "Sign In - Chinwag";
-        this.render();
-    }
-    async submitHandler(e) {
-        e.preventDefault();
-        if (this.loading) return;
-        this.loading = true;
-        this.render();
-        const form = e.target;
-        const email = form.querySelector('[name="email"]').value.trim();
-        const password = form.querySelector('[name="password"]').value;
-        try {
-            await (0, _authJsDefault.default).signIn({
-                email,
-                password
-            });
-        } catch (err) {
-            this.loading = false;
-            this.render();
-        }
-    }
-    render() {
-        const template = (0, _litHtml.html)`
-      <div class="page-content page-centered" role="main">
-        <h1>Sign In</h1>
-        <div class="form-wrapper" aria-label="Sign In Form">
-          <form @submit=${this.submitHandler.bind(this)}>
-            <sl-input
-              name="email"
-              type="email"
-              label="Email"
-              required
-              aria-required="true"
-              autocomplete="email"
-            ></sl-input>
-            <sl-input
-              name="password"
-              type="password"
-              label="Password"
-              required
-              aria-required="true"
-              autocomplete="current-password"
-            ></sl-input>
-            <sl-button
-              type="submit"
-              variant="primary"
-              ?disabled=${this.loading}
-              ?loading=${this.loading}
-            >
-              Sign In
-            </sl-button>
-          </form>
-          <p>
-            Don't have an account?
-            <a
-              href="/signup"
-              @click=${(e)=>{
-            e.preventDefault();
-            (0, _routerJs.gotoRoute)("/signup");
-        }}
-              aria-label="Go to Sign Up"
-            >
-              Sign Up
-            </a>
-          </p>
-        </div>
-      </div>
-    `;
-        (0, _litHtml.render)(template, (0, _appJsDefault.default).rootEl);
-    }
-}
-exports.default = new SignInView();
-
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../Toast.js":"8c3DX","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}]},["iUuJv","fILKw"], "fILKw", "parcelRequire42eb", {})
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bo7w8":[function() {},{}]},["iUuJv","fILKw"], "fILKw", "parcelRequire42eb", {})
 
 //# sourceMappingURL=frontend.1fcc916e.js.map

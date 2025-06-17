@@ -1,5 +1,6 @@
 //main.js
 
+import "./styles/main.scss"; // Import SCSS for Parcel to bundle
 import App from "./App.js";
 
 // Optional: show a quick loading message

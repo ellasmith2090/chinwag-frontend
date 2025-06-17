@@ -71,8 +71,22 @@ const Router = {
 };
 
 export function gotoRoute(path) {
+  if (process.env.NODE_ENV === "development") {
+    console.log("[Router] Navigating to:", path);
+  }
   history.pushState({}, "", path);
   Router.route();
+}
+
+export function anchorRoute(e) {
+  e.preventDefault();
+  const path = e.currentTarget.getAttribute("href");
+  if (path) {
+    if (process.env.NODE_ENV === "development") {
+      console.log("[Router] Anchor route to:", path);
+    }
+    gotoRoute(path);
+  }
 }
 
 export default Router;
