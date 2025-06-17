@@ -669,34 +669,33 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 },{}],"fILKw":[function(require,module,exports,__globalThis) {
 //main.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+var _lightCss = require("@shoelace-style/shoelace/dist/themes/light.css");
 var _shoelaceJs = require("@shoelace-style/shoelace/dist/shoelace.js");
 var _mainScss = require("./styles/main.scss");
 var _appJs = require("./App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
-// Clear rootEl and log
 console.log("[main.js] Clearing root element");
-document.getElementById("root").innerHTML = "";
-// Initialize the app
+const rootEl = document.getElementById("root");
+rootEl.innerHTML = "";
 console.log("[main.js] Initializing App");
 (0, _appJsDefault.default).init().catch((err)=>{
-    document.getElementById("root").innerHTML = `
-    <p style="color:red;">App failed to load: ${err.message}</p>
-  `;
+    rootEl.innerHTML = `<p style="color:red;">App failed to load: ${err.message}</p>`;
     console.error("[main.js] App init failed:", err);
 });
 
-},{"./styles/main.scss":"bo7w8","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@shoelace-style/shoelace/dist/shoelace.js":"bNZ7U"}],"bo7w8":[function() {},{}],"hh6uc":[function(require,module,exports,__globalThis) {
+},{"./styles/main.scss":"bo7w8","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","@shoelace-style/shoelace/dist/shoelace.js":"bNZ7U","@shoelace-style/shoelace/dist/themes/light.css":"jjR64"}],"bo7w8":[function() {},{}],"hh6uc":[function(require,module,exports,__globalThis) {
 // App.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _routerJs = require("./Router.js");
 var _routerJsDefault = parcelHelpers.interopDefault(_routerJs);
 const App = {
-    apiBase: "https://chinwag-backend.onrender.com",
+    apiBase: "https://chinwag-backend.onrender.com/api",
+    rootEl: null,
     async init () {
         this.rootEl = document.getElementById("root");
         if (!this.rootEl) throw new Error("Root element #root not found");
-        console.log("[App] Root element found, initializing Router");
+        console.log("[App] Initialising...");
         await (0, _routerJsDefault.default).init();
     }
 };
@@ -33226,6 +33225,6 @@ var animation_styles_default = (0, _lit.css)`
   }
 `;
 
-},{"lit":"hh14x","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}]},["iUuJv","fILKw"], "fILKw", "parcelRequire42eb", {})
+},{"lit":"hh14x","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jjR64":[function() {},{}]},["iUuJv","fILKw"], "fILKw", "parcelRequire42eb", {})
 
 //# sourceMappingURL=frontend.1fcc916e.js.map
