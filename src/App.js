@@ -3,7 +3,7 @@
 import Router from "./Router.js";
 
 const App = {
-  apiBase: process.env.API_BASE_URL || "http://localhost:3000",
+  apiBase: "http://localhost:3000",
   rootEl: null,
 
   async init() {

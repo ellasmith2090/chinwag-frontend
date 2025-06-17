@@ -822,9 +822,7 @@ class SignInView {
     init() {
         document.title = "Sign In - Chinwag";
         console.log("[SignInView] init() called");
-        (0, _appJsDefault.default).rootEl.innerHTML = `<p>Loading sign in form...</p>`;
-        // Wait to ensure Shoelace elements are registered
-        setTimeout(()=>this.render(), 0);
+        this.render();
     }
     async submitHandler(e) {
         e.preventDefault();
@@ -836,7 +834,7 @@ class SignInView {
         const password = form.querySelector('[name="password"]').value;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            (0, _toastJsDefault.default).show("\u26A0\uFE0F Please enter a valid email address.", "warning");
+            (0, _toastJsDefault.default).show("Please enter a valid email address.", "warning");
             this.loading = false;
             this.render();
             return;
@@ -846,17 +844,15 @@ class SignInView {
                 email,
                 password
             });
-            (0, _toastJsDefault.default).show("\u2705 Signed in successfully!", "success");
-            const user = (0, _authJsDefault.default).currentUser;
-            (0, _routerJs.gotoRoute)(user.isFirstLogin ? user.accessLevel === 1 ? "/guest-guide" : "/host-guide" : user.accessLevel === 1 ? "/guest-home" : "/host-home");
+            this.loading = false;
         } catch (err) {
             this.loading = false;
             console.error("[SignInView] Login error:", err);
-            if (err.status === 404) {
+            if (err.message.includes("User doesn't exist")) {
                 (0, _toastJsDefault.default).show("No account found. Redirecting to Sign Up...", "warning");
                 setTimeout(()=>(0, _routerJs.gotoRoute)("/signup"), 2000);
-            } else if (err.status === 401) (0, _toastJsDefault.default).show("Incorrect password. Please try again.", "warning");
-            else (0, _toastJsDefault.default).show(`\u{274C} Login failed: ${err.message || "Unknown error"}`, "danger");
+            } else if (err.message.includes("Password or email is incorrect")) (0, _toastJsDefault.default).show("Incorrect email or password.", "warning");
+            else (0, _toastJsDefault.default).show(`Login failed: ${err.message}`, "danger");
             this.render();
         }
     }
@@ -875,7 +871,6 @@ class SignInView {
               autocomplete="email"
               aria-required="true"
             ></sl-input>
-
             <sl-input
               name="password"
               type="password"
@@ -884,11 +879,9 @@ class SignInView {
               autocomplete="current-password"
               aria-required="true"
             ></sl-input>
-
             <sl-button
               type="submit"
               variant="primary"
-              class="primary"
               ?disabled=${this.loading}
               ?loading=${this.loading}
               aria-label="Submit Sign In"
@@ -898,15 +891,21 @@ class SignInView {
           </form>
           <p>
             Don't have an account?
-            <a href="/signup" @click=${(0, _routerJs.anchorRoute)} aria-label="Go to Sign Up">
+            <a
+              href="/signup"
+              @click=${(e)=>{
+            e.preventDefault();
+            (0, _routerJs.gotoRoute)("/signup");
+        }}
+              aria-label="Go to Sign Up"
+            >
               Sign Up
             </a>
           </p>
         </div>
       </div>
     `;
-        // Defer rendering to ensure Shoelace is fully ready
-        setTimeout(()=>(0, _litHtml.render)(template, (0, _appJsDefault.default).rootEl), 0);
+        (0, _litHtml.render)(template, (0, _appJsDefault.default).rootEl);
     }
 }
 exports.default = new SignInView();
@@ -1324,18 +1323,32 @@ exports.default = Auth;
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _litHtml = require("lit-html");
-const toastContainer = document.createElement("div");
-toastContainer.className = "toast-container";
-document.body.appendChild(toastContainer);
 const Toast = {
     show (message, variant = "primary", duration = 3000) {
-        const alert = document.createElement("sl-alert");
-        alert.variant = variant;
-        alert.duration = duration;
-        alert.closable = true;
-        alert.innerHTML = message;
-        (0, _litHtml.render)((0, _litHtml.html)`${alert}`, toastContainer);
-        alert.toast();
+        let container = document.getElementById("toast-container");
+        if (!container) {
+            container = document.createElement("div");
+            container.id = "toast-container";
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement("div");
+        toast.className = "toast-wrapper";
+        const template = (0, _litHtml.html)`
+      <sl-alert
+        variant="${variant}"
+        duration="${duration}"
+        closable
+        class="toast"
+      >
+        <sl-icon slot="icon" name="info-circle"></sl-icon>
+        ${message}
+      </sl-alert>
+    `;
+        (0, _litHtml.render)(template, toast);
+        container.appendChild(toast);
+        setTimeout(()=>{
+            toast.remove();
+        }, duration + 300);
     }
 };
 exports.default = Toast;
