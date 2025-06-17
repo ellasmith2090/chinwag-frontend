@@ -29,6 +29,7 @@ const Router = {
   },
   async route() {
     const path = window.location.pathname;
+    console.log("[Router] Routing to:", path);
     const view = this.routes[path] || SignInView;
     const isAuthenticated = await Auth.check();
 

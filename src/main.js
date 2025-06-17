@@ -1,12 +1,15 @@
 //main.js
 
-import "./styles/main.scss"; // Already present, ensure no errors
+// main.js
+import "./styles/main.scss";
 import App from "./App.js";
 
-// Clear loading message before init to avoid interference
+// Clear rootEl and log
+console.log("[main.js] Clearing root element");
 document.getElementById("root").innerHTML = "";
 
-// Initialize the app (includes routing)
+// Initialize the app
+console.log("[main.js] Initializing App");
 App.init().catch((err) => {
   document.getElementById("root").innerHTML = `
     <p style="color:red;">App failed to load: ${err.message}</p>

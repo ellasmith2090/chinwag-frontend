@@ -1,4 +1,5 @@
 // App.js
+
 import Router from "./Router.js";
 
 const App = {
@@ -8,8 +9,7 @@ const App = {
   async init() {
     this.rootEl = document.getElementById("root");
     if (!this.rootEl) throw new Error("Root element #root not found");
-
-    console.log("[App] Initialising...");
+    console.log("[App] Root element found, initializing Router");
     await Router.init();
   },
 };
