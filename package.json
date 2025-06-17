@@ -1,12 +1,12 @@
 {
   "name": "chinwag-frontend",
   "version": "1.0.0",
-  "scripts": {
-    "start": "parcel src/index.html",
-    "build": "parcel build src/index.html",
-    "clean": "rm -rf dist .parcel-cache",
-    "dev": "parcel src/index.html"
-  },
+
+"scripts": {
+  "start": "parcel index.html",
+"build": "parcel build index.html",
+  "clean": "rm -rf dist .parcel-cache"
+},  
   "devDependencies": {
     "@parcel/transformer-css": "^2.15.2",
     "@parcel/transformer-sass": "^2.12.0",

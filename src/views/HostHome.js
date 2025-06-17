@@ -1,11 +1,11 @@
 // views/hosthome.js
 
 import { html, render } from "lit-html";
-import App from "../App.js";
-import Auth from "../Auth.js";
-import Toast from "../Toast.js";
+import App from "../../App.js";
+import Auth from "../../Auth.js";
+import Toast from "../../Toast.js";
 import DOMPurify from "dompurify";
-import { gotoRoute } from "../Router.js";
+import { gotoRoute } from "../../Router.js";
 
 class HostHomeView {
   constructor() {
