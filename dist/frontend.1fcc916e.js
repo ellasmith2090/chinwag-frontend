@@ -1222,7 +1222,6 @@ exports.export = function(dest, destName, get) {
 };
 
 },{}],"aJFb5":[function(require,module,exports,__globalThis) {
-// Auth.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _routerJs = require("./Router.js");
@@ -1234,7 +1233,7 @@ const Auth = {
     currentUser: null,
     async signIn ({ email, password }) {
         try {
-            const response = await fetch(`${(0, _appJsDefault.default).apiBase}/api/auth/signin`, {
+            const response = await fetch(`${(0, _appJsDefault.default).apiBase}/auth/signin`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -1262,7 +1261,7 @@ const Auth = {
     },
     async signUp ({ firstName, lastName, email, password, accessLevel }) {
         try {
-            const response = await fetch(`${(0, _appJsDefault.default).apiBase}/api/users`, {
+            const response = await fetch(`${(0, _appJsDefault.default).apiBase}/users`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -1294,7 +1293,7 @@ const Auth = {
             return false;
         }
         try {
-            const response = await fetch(`${(0, _appJsDefault.default).apiBase}/api/auth/validate`, {
+            const response = await fetch(`${(0, _appJsDefault.default).apiBase}/auth/validate`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

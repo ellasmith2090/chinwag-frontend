@@ -1,5 +1,3 @@
-// Auth.js
-
 import { gotoRoute } from "./Router.js";
 import Toast from "./Toast.js";
 import App from "./App.js";
@@ -9,7 +7,7 @@ const Auth = {
 
   async signIn({ email, password }) {
     try {
-      const response = await fetch(`${App.apiBase}/api/auth/signin`, {
+      const response = await fetch(`${App.apiBase}/auth/signin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -46,7 +44,7 @@ const Auth = {
 
   async signUp({ firstName, lastName, email, password, accessLevel }) {
     try {
-      const response = await fetch(`${App.apiBase}/api/users`, {
+      const response = await fetch(`${App.apiBase}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -82,7 +80,7 @@ const Auth = {
     }
 
     try {
-      const response = await fetch(`${App.apiBase}/api/auth/validate`, {
+      const response = await fetch(`${App.apiBase}/auth/validate`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
