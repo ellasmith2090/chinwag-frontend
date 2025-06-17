@@ -1,9 +1,9 @@
 // views/HostGuide.js
 
-import App from "../../App.js";
-import Auth from "../../Auth.js";
-import { gotoRoute } from "../../Router.js";
-import Toast from "../../Toast.js";
+import App from "../App.js";
+import Auth from "../Auth.js";
+import { gotoRoute } from "../Router.js";
+import Toast from "../components/Toast.js";
 import DOMPurify from "dompurify";
 
 class HostGuideView {

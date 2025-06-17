@@ -1,8 +1,8 @@
 // components/header.js
 
 import { html, render } from "lit-html";
-import Auth from "../../Auth.js";
-import { gotoRoute } from "../../Router.js";
+import Auth from "../Auth.js";
+import { gotoRoute } from "../Router.js";
 
 const Header = {
   render() {
