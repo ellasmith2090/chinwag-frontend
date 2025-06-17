@@ -3,7 +3,7 @@
 import Router from "./Router.js";
 
 const App = {
-  apiBase: "https://chinwag-backend.onrender.com",
+  apiBase: "https://chinwag-backend.onrender.com/api",
   rootEl: null,
 
   async init() {
