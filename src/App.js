@@ -1,3 +1,5 @@
+//app.js
+
 import Router from "./Router.js";
 
 const App = {
