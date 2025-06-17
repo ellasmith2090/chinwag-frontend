@@ -1,10 +1,10 @@
 //main.js
 
-import "./styles/main.scss"; // Import SCSS for Parcel to bundle
+import "./styles/main.scss"; // Already present, ensure no errors
 import App from "./App.js";
 
-// Optional: show a quick loading message
-document.getElementById("root").innerHTML = "<p>Loading Chinwag...</p>";
+// Clear loading message before init to avoid interference
+document.getElementById("root").innerHTML = "";
 
 // Initialize the app (includes routing)
 App.init().catch((err) => {

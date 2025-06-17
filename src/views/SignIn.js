@@ -71,6 +71,7 @@ class SignInView {
     if (process.env.NODE_ENV === "development") {
       console.log("[SignInView] render() called");
     }
+    App.rootEl.innerHTML = ""; // Clear any previous content
     const template = html`
       <div class="page-content page-centered" role="main">
         <h1>Sign In</h1>
