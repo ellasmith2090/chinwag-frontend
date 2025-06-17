@@ -2,8 +2,12 @@
 
 import Router from "./Router.js";
 
+const isLocal = window.location.hostname === "localhost";
+
 const App = {
-  apiBase: "http://localhost:3000",
+  apiBase: isLocal
+    ? "http://localhost:3000"
+    : "https://chinwag-backend.onrender.com",
   rootEl: null,
 
   async init() {

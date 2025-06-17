@@ -691,8 +691,9 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _routerJs = require("./Router.js");
 var _routerJsDefault = parcelHelpers.interopDefault(_routerJs);
+const isLocal = window.location.hostname === "localhost";
 const App = {
-    apiBase: "http://localhost:3000",
+    apiBase: isLocal ? "http://localhost:3000" : "https://chinwag-backend.onrender.com",
     rootEl: null,
     async init () {
         this.rootEl = document.getElementById("root");
