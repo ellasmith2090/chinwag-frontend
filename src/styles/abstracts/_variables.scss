@@ -1,9 +1,7 @@
-// Font Families
+// abstracts/_variables.scss
 $font-title: "Neo Contact", serif;
 $font-heading: "Barlow Semi Condensed", sans-serif;
 $font-body: "Helvetica World", sans-serif;
-
-// Font Sizes
 $h1-size: 4rem;
 $h2-size: 3rem;
 $h3-size: 2.5rem;
@@ -11,8 +9,6 @@ $h4-size: 2rem;
 $h5-size: 1rem;
 $p-size: 1rem;
 $p-size-mobile: 0.95rem;
-
-// Color Palette
 $primary: #385787;
 $secondary: #f6f6f6;
 $text-color: #222;
@@ -27,6 +23,4 @@ $shadow-light: rgba(0, 0, 0, 0.05);
 $shadow-medium: rgba(0, 0, 0, 0.15);
 $toast-danger: #933023;
 $guide-bg: #2b4263;
-
-// Breakpoints
 $bp-mobile: 768px;

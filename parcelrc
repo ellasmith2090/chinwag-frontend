@@ -1,5 +1,6 @@
 {
   "transformers": {
     "*.scss": ["@parcel/transformer-sass"]
-  }
+  },
+  "bundler": "@parcel/bundler-default"
 }
