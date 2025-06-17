@@ -56,6 +56,8 @@ class SignUpView {
       this.render();
     } catch (err) {
       this.loading = false;
+      Toast.show(`Sign-up failed: ${err.message || "Please try again."}`);
+      console.error("[SignUp] Submit failed:", err);
       this.render();
     }
   }
