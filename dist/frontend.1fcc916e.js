@@ -29894,13 +29894,14 @@ var animation_styles_default = (0, _lit.css)`
 `;
 
 },{"lit":"hh14x","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bo7w8":[function() {},{}],"hh6uc":[function(require,module,exports,__globalThis) {
-// App.js
+//app.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _routerJs = require("./Router.js");
 var _routerJsDefault = parcelHelpers.interopDefault(_routerJs);
 const App = {
-    apiBase: "https://chinwag-backend.onrender.com/api",
+    // Switch base URL depending on environment
+    apiBase: window.location.hostname === "localhost" ? "http://localhost:3000/api" : "https://chinwag-backend.onrender.com/api",
     rootEl: null,
     async init () {
         this.rootEl = document.getElementById("root");
@@ -30021,7 +30022,7 @@ var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 var _authJs = require("../Auth.js");
 var _authJsDefault = parcelHelpers.interopDefault(_authJs);
 var _routerJs = require("../Router.js");
-var _toastJs = require("../Toast.js");
+var _toastJs = require("../components/Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 class SignInView {
     constructor(){
@@ -30118,12 +30119,12 @@ class SignInView {
 }
 exports.default = new SignInView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../Toast.js":"8c3DX","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"aJFb5":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../components/Toast.js":"eSyC4","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"aJFb5":[function(require,module,exports,__globalThis) {
 // auth.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _routerJs = require("./Router.js");
-var _toastJs = require("./Toast.js");
+var _toastJs = require("./components/Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 var _appJs = require("./App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
@@ -30176,8 +30177,12 @@ const Auth = {
                 const error = await response.json();
                 throw new Error(error.message || "Sign-up failed");
             }
-            (0, _toastJsDefault.default).show("Account created! Please sign in.");
-            (0, _routerJs.gotoRoute)("/signin");
+            const { accessToken, user } = await response.json();
+            localStorage.setItem("token", accessToken);
+            this.currentUser = user;
+            (0, _toastJsDefault.default).show(`Welcome, ${user.firstName}!`);
+            const redirectPath = user.isFirstLogin ? user.accessLevel === 1 ? "/guest-guide" : "/host-guide" : user.accessLevel === 1 ? "/guest-home" : "/host-home";
+            (0, _routerJs.gotoRoute)(redirectPath);
         } catch (err) {
             (0, _toastJsDefault.default).show(err.message || "Failed to sign up. Please check your connection.");
             console.error("[Auth] signUp failed:", err);
@@ -30215,7 +30220,8 @@ const Auth = {
 };
 exports.default = Auth;
 
-},{"./Router.js":"b5tFI","./Toast.js":"8c3DX","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8c3DX":[function(require,module,exports,__globalThis) {
+},{"./Router.js":"b5tFI","./components/Toast.js":"eSyC4","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"eSyC4":[function(require,module,exports,__globalThis) {
+// Toast.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _litHtml = require("lit-html");
@@ -30259,7 +30265,7 @@ var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 var _authJs = require("../Auth.js");
 var _authJsDefault = parcelHelpers.interopDefault(_authJs);
 var _routerJs = require("../Router.js");
-var _toastJs = require("../Toast.js");
+var _toastJs = require("../components/Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 var _dompurify = require("dompurify");
 var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
@@ -30303,6 +30309,8 @@ class SignUpView {
             this.render();
         } catch (err) {
             this.loading = false;
+            (0, _toastJsDefault.default).show(`Sign-up failed: ${err.message || "Please try again."}`);
+            console.error("[SignUp] Submit failed:", err);
             this.render();
         }
     }
@@ -30394,7 +30402,7 @@ class SignUpView {
 }
 exports.default = new SignUpView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../Toast.js":"8c3DX","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1IHUz":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../components/Toast.js":"eSyC4","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1IHUz":[function(require,module,exports,__globalThis) {
 /*! @license DOMPurify 3.2.6 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.2.6/LICENSE */ (function(global, factory) {
     module.exports = factory();
 })(this, function() {
@@ -32124,7 +32132,7 @@ var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 var _authJs = require("../Auth.js");
 var _authJsDefault = parcelHelpers.interopDefault(_authJs);
 var _routerJs = require("../Router.js");
-var _toastJs = require("../Toast.js");
+var _toastJs = require("../components/Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 var _dompurify = require("dompurify");
 var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
@@ -32212,17 +32220,16 @@ class GuestGuideView {
 }
 exports.default = new GuestGuideView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../Toast.js":"8c3DX","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"Kckvv":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../components/Toast.js":"eSyC4","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"Kckvv":[function(require,module,exports,__globalThis) {
 // views/HostGuide.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-var _litHtml = require("lit-html");
 var _appJs = require("../App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 var _authJs = require("../Auth.js");
 var _authJsDefault = parcelHelpers.interopDefault(_authJs);
 var _routerJs = require("../Router.js");
-var _toastJs = require("../Toast.js");
+var _toastJs = require("../components/Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 var _dompurify = require("dompurify");
 var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
@@ -32257,7 +32264,7 @@ class HostGuideView {
         }
     }
     render() {
-        const template = (0, _litHtml.html)`
+        const template = html`
       <div class="guide-page">
         <div
           class="guide-header"
@@ -32305,12 +32312,12 @@ class HostGuideView {
         ></div>
       </div>
     `;
-        (0, _litHtml.render)(template, (0, _appJsDefault.default).rootEl);
+        render(template, (0, _appJsDefault.default).rootEl);
     }
 }
 exports.default = new HostGuideView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../Toast.js":"8c3DX","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2fU3z":[function(require,module,exports,__globalThis) {
+},{"../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../components/Toast.js":"eSyC4","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"2fU3z":[function(require,module,exports,__globalThis) {
 // views/profile.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -32319,7 +32326,7 @@ var _appJs = require("../App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 var _authJs = require("../Auth.js");
 var _authJsDefault = parcelHelpers.interopDefault(_authJs);
-var _toastJs = require("../Toast.js");
+var _toastJs = require("../components/Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 var _dompurify = require("dompurify");
 var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
@@ -32577,7 +32584,7 @@ class ProfileView {
 }
 exports.default = new ProfileView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3PJ6N":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3PJ6N":[function(require,module,exports,__globalThis) {
 // components/header.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -32639,7 +32646,7 @@ var _appJs = require("../App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 var _authJs = require("../Auth.js");
 var _authJsDefault = parcelHelpers.interopDefault(_authJs);
-var _toastJs = require("../Toast.js");
+var _toastJs = require("../components/Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 var _dompurify = require("dompurify");
 var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
@@ -32742,7 +32749,7 @@ class GuestHomeView {
 }
 exports.default = new GuestHomeView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"d2S5w":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"d2S5w":[function(require,module,exports,__globalThis) {
 // views/hosthome.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -32751,7 +32758,7 @@ var _appJs = require("../App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 var _authJs = require("../Auth.js");
 var _authJsDefault = parcelHelpers.interopDefault(_authJs);
-var _toastJs = require("../Toast.js");
+var _toastJs = require("../components/Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 var _dompurify = require("dompurify");
 var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
@@ -32872,7 +32879,7 @@ class HostHomeView {
 }
 exports.default = new HostHomeView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","../Router.js":"b5tFI","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"66jdU":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../Router.js":"b5tFI","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"66jdU":[function(require,module,exports,__globalThis) {
 // views/GuestBookings.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -32881,7 +32888,7 @@ var _appJs = require("../App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 var _authJs = require("../Auth.js");
 var _authJsDefault = parcelHelpers.interopDefault(_authJs);
-var _toastJs = require("../Toast.js");
+var _toastJs = require("../components/Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 var _dompurify = require("dompurify");
 var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
@@ -33044,7 +33051,7 @@ class GuestBookingsView {
 }
 exports.default = new GuestBookingsView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bmUJu":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"bmUJu":[function(require,module,exports,__globalThis) {
 // views/HostBookings.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -33053,7 +33060,7 @@ var _appJs = require("../App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 var _authJs = require("../Auth.js");
 var _authJsDefault = parcelHelpers.interopDefault(_authJs);
-var _toastJs = require("../Toast.js");
+var _toastJs = require("../components/Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 var _dompurify = require("dompurify");
 var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
@@ -33225,6 +33232,6 @@ class HostBookingsView {
 }
 exports.default = new HostBookingsView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Toast.js":"8c3DX","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}]},["iUuJv","fILKw"], "fILKw", "parcelRequire42eb", {})
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}]},["iUuJv","fILKw"], "fILKw", "parcelRequire42eb", {})
 
 //# sourceMappingURL=frontend.1fcc916e.js.map
