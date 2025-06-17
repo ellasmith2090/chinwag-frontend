@@ -1,5 +1,7 @@
 // Auth.js
 
+// Auth.js
+
 import { gotoRoute } from "./Router.js";
 import Toast from "./Toast.js";
 import App from "./App.js";
@@ -14,14 +16,18 @@ const Auth = {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Sign-in failed");
       }
+
       const { accessToken, user } = await response.json();
       localStorage.setItem("token", accessToken);
       this.currentUser = user;
+
       Toast.show(`Welcome back, ${user.firstName}!`);
+
       const redirectPath = user.isFirstLogin
         ? user.accessLevel === 1
           ? "/guest-guide"
@@ -29,11 +35,13 @@ const Auth = {
         : user.accessLevel === 1
         ? "/guest-home"
         : "/host-home";
+
       gotoRoute(redirectPath);
     } catch (err) {
       Toast.show(
         err.message || "Failed to sign in. Please check your connection."
       );
+      console.error("[Auth] signIn failed:", err);
       throw err;
     }
   },
@@ -51,16 +59,19 @@ const Auth = {
           accessLevel,
         }),
       });
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Sign-up failed");
       }
+
       Toast.show("Account created! Please sign in.");
       gotoRoute("/signin");
     } catch (err) {
       Toast.show(
         err.message || "Failed to sign up. Please check your connection."
       );
+      console.error("[Auth] signUp failed:", err);
       throw err;
     }
   },
@@ -71,17 +82,20 @@ const Auth = {
       this.currentUser = null;
       return false;
     }
+
     try {
       const response = await fetch(`${App.apiBase}/api/auth/validate`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       if (!response.ok) {
         throw new Error("Invalid token");
       }
+
       this.currentUser = (await response.json()).user;
       return true;
     } catch (err) {
-      console.warn("[Auth] Failed to validate session:", err.message);
+      console.warn("[Auth] Session check failed:", err.message);
       localStorage.removeItem("token");
       this.currentUser = null;
       return false;

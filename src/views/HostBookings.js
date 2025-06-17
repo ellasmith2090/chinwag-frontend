@@ -5,7 +5,7 @@ import App from "../App.js";
 import Auth from "../Auth.js";
 import Toast from "../Toast.js";
 import DOMPurify from "dompurify";
-import Header from "./Header.js";
+import Header from "../components/Header.js";
 
 class HostBookingsView {
   constructor() {

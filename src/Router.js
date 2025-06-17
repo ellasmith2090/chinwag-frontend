@@ -1,6 +1,6 @@
 // router.js
 
-import SignInView from "./views/SignInView.js";
+import SignInView from "./views/SignIn.js";
 import SignUpView from "./views/SignUp.js";
 import GuestGuideView from "./views/GuestGuide.js";
 import HostGuideView from "./views/HostGuide.js";
@@ -32,8 +32,8 @@ const Router = {
     const view = this.routes[path] || SignInView;
     const isAuthenticated = await Auth.check();
 
-    if (!isAuthenticated && !["/SignIn", "/SignUp"].includes(path)) {
-      gotoRoute("/SignIn");
+    if (!isAuthenticated && !["/signin", "/signup"].includes(path)) {
+      gotoRoute("/signin");
       return;
     }
 
