@@ -1,7 +1,5 @@
 @use "variables";
 
-@use "variables";
-
 // Font Mixins
 @mixin font-title {
   font-family: variables.$font-title;

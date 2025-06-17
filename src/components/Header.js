@@ -1,6 +1,6 @@
 // components/header.js
 
-import { html } from "lit-html";
+import { html, render } from "lit-html";
 import Auth from "../Auth.js";
 import { gotoRoute } from "../Router.js";
 
