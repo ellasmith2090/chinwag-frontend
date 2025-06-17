@@ -1,19 +1,30 @@
 import { html, render } from "lit-html";
 
-const toastContainer = document.createElement("div");
-toastContainer.className = "toast-container";
-document.body.appendChild(toastContainer);
-
 const Toast = {
   show(message, variant = "primary", duration = 3000) {
-    const alert = document.createElement("sl-alert");
-    alert.variant = variant;
-    alert.duration = duration;
-    alert.closable = true;
-    alert.innerHTML = message;
+    const toastContainer = document.createElement("div");
+    toastContainer.style.position = "fixed";
+    toastContainer.style.top = "20px";
+    toastContainer.style.right = "20px";
+    toastContainer.style.zIndex = "1000";
+    document.body.appendChild(toastContainer);
 
-    render(html`${alert}`, toastContainer);
-    alert.toast();
+    const template = html`
+      <sl-alert
+        variant="${variant}"
+        duration="${duration}"
+        closable
+        style="margin-bottom: 10px;"
+      >
+        <sl-icon slot="icon" name="info-circle"></sl-icon>
+        ${message}
+      </sl-alert>
+    `;
+    render(template, toastContainer);
+
+    setTimeout(() => {
+      toastContainer.remove();
+    }, duration + 500);
   },
 };
 

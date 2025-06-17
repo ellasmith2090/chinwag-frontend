@@ -3,7 +3,7 @@
 import { html, render } from "lit-html";
 import App from "../App.js";
 import Auth from "../Auth.js";
-import { gotoRoute, anchorRoute } from "../Router.js";
+import { gotoRoute } from "../Router.js";
 import Toast from "../Toast.js";
 
 class SignInView {
@@ -16,10 +16,7 @@ class SignInView {
     if (process.env.NODE_ENV === "development") {
       console.log("[SignInView] init() called");
     }
-
-    App.rootEl.innerHTML = `<p>Loading sign in form...</p>`;
-    // Wait to ensure Shoelace elements are registered
-    setTimeout(() => this.render(), 0);
+    this.render();
   }
 
   async submitHandler(e) {
@@ -34,7 +31,7 @@ class SignInView {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Toast.show("⚠️ Please enter a valid email address.", "warning");
+      Toast.show("Please enter a valid email address.", "warning");
       this.loading = false;
       this.render();
       return;
@@ -42,34 +39,19 @@ class SignInView {
 
     try {
       await Auth.signIn({ email, password });
-      Toast.show("✅ Signed in successfully!", "success");
-
-      const user = Auth.currentUser;
-      gotoRoute(
-        user.isFirstLogin
-          ? user.accessLevel === 1
-            ? "/guest-guide"
-            : "/host-guide"
-          : user.accessLevel === 1
-          ? "/guest-home"
-          : "/host-home"
-      );
+      this.loading = false;
     } catch (err) {
       this.loading = false;
       if (process.env.NODE_ENV === "development") {
         console.error("[SignInView] Login error:", err);
       }
-
-      if (err.status === 404) {
+      if (err.message.includes("User doesn't exist")) {
         Toast.show("No account found. Redirecting to Sign Up...", "warning");
         setTimeout(() => gotoRoute("/signup"), 2000);
-      } else if (err.status === 401) {
-        Toast.show("Incorrect password. Please try again.", "warning");
+      } else if (err.message.includes("Password or email is incorrect")) {
+        Toast.show("Incorrect email or password.", "warning");
       } else {
-        Toast.show(
-          `❌ Login failed: ${err.message || "Unknown error"}`,
-          "danger"
-        );
+        Toast.show(`Login failed: ${err.message}`, "danger");
       }
       this.render();
     }
@@ -93,7 +75,6 @@ class SignInView {
               autocomplete="email"
               aria-required="true"
             ></sl-input>
-
             <sl-input
               name="password"
               type="password"
@@ -102,11 +83,9 @@ class SignInView {
               autocomplete="current-password"
               aria-required="true"
             ></sl-input>
-
             <sl-button
               type="submit"
               variant="primary"
-              class="primary"
               ?disabled=${this.loading}
               ?loading=${this.loading}
               aria-label="Submit Sign In"
@@ -116,16 +95,21 @@ class SignInView {
           </form>
           <p>
             Don't have an account?
-            <a href="/signup" @click=${anchorRoute} aria-label="Go to Sign Up">
+            <a
+              href="/signup"
+              @click=${(e) => {
+                e.preventDefault();
+                gotoRoute("/signup");
+              }}
+              aria-label="Go to Sign Up"
+            >
               Sign Up
             </a>
           </p>
         </div>
       </div>
     `;
-
-    // Defer rendering to ensure Shoelace is fully ready
-    setTimeout(() => render(template, App.rootEl), 0);
+    render(template, App.rootEl);
   }
 }
 
