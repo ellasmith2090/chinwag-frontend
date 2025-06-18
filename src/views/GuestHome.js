@@ -54,7 +54,7 @@ class GuestHomeView {
       });
       if (!response.ok) throw new Error((await response.json()).message);
       Toast.show("Event booked!");
-      this.fetchEvents(); // Refresh to update availability
+      this.fetchEvents();
     } catch (err) {
       Toast.show(err.message || "Booking failed");
       console.error("[GuestHome] bookEvent error:", err);

@@ -1,7 +1,5 @@
 // components/header.js
-
 // components/Header.js
-
 import { html } from "lit-html";
 import Auth from "../Auth.js";
 import { gotoRoute } from "../Router.js";
@@ -13,12 +11,14 @@ const Header = {
     return html`
       <header class="site-header">
         <div class="header-content">
-          <h1
+          <div
             class="logo"
             @click=${() => gotoRoute(isHost ? "/host-home" : "/guest-home")}
+            role="button"
+            aria-label="Go to home"
           >
             Chinwag
-          </h1>
+          </div>
 
           <sl-tab-group class="nav-tabs">
             <sl-tab

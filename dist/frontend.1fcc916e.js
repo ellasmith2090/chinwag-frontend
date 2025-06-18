@@ -30246,7 +30246,7 @@ function isTokenExpired(token) {
 }
 exports.default = Auth;
 
-},{"./Router.js":"b5tFI","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","./components/Toast.js":"eSyC4"}],"eSyC4":[function(require,module,exports,__globalThis) {
+},{"./Router.js":"b5tFI","./components/Toast.js":"eSyC4","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"eSyC4":[function(require,module,exports,__globalThis) {
 // Toast.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -30434,7 +30434,7 @@ class SignUpView {
 }
 exports.default = new SignUpView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../components/Toast.js":"eSyC4","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","../apiFetch.js":"96g6P"}],"1IHUz":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../apiFetch.js":"96g6P","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1IHUz":[function(require,module,exports,__globalThis) {
 /*! @license DOMPurify 3.2.6 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.2.6/LICENSE */ (function(global, factory) {
     module.exports = factory();
 })(this, function() {
@@ -32645,7 +32645,7 @@ class ProfileView {
 }
 exports.default = new ProfileView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","../apiFetch.js":"96g6P"}],"3PJ6N":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","../apiFetch.js":"96g6P","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3PJ6N":[function(require,module,exports,__globalThis) {
 // components/header.js
 // components/Header.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -32660,12 +32660,14 @@ const Header = {
         return (0, _litHtml.html)`
       <header class="site-header">
         <div class="header-content">
-          <h1
+          <div
             class="logo"
             @click=${()=>(0, _routerJs.gotoRoute)(isHost ? "/host-home" : "/guest-home")}
+            role="button"
+            aria-label="Go to home"
           >
             Chinwag
-          </h1>
+          </div>
 
           <sl-tab-group class="nav-tabs">
             <sl-tab
@@ -32761,7 +32763,7 @@ class GuestHomeView {
             });
             if (!response.ok) throw new Error((await response.json()).message);
             (0, _toastJsDefault.default).show("Event booked!");
-            this.fetchEvents(); // Refresh to update availability
+            this.fetchEvents();
         } catch (err) {
             (0, _toastJsDefault.default).show(err.message || "Booking failed");
             console.error("[GuestHome] bookEvent error:", err);
@@ -32851,7 +32853,7 @@ class GuestHomeView {
 }
 exports.default = new GuestHomeView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","../apiFetch.js":"96g6P"}],"d2S5w":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","../apiFetch.js":"96g6P","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"d2S5w":[function(require,module,exports,__globalThis) {
 // views/hosthome.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);

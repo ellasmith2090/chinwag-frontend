@@ -1,2 +1,31 @@
-node_modules/ dist/ .cache/ .env *.log
-node_modules
+# Node
+node_modules/
+
+# Parcel
+dist/
+.parcel-cache/
+.cache/
+
+# Environment files
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-specific
+.DS_Store
+
+# Editor-specific
+.vscode/
+.idea/
+
+# Netlify build output (optional, if not needed in repo)
+.netlify/
+
+# Lock files (optional if using only one package manager)
+# yarn.lock
+# package-lock.json
