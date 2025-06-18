@@ -30014,6 +30014,7 @@ exports.default = Router;
 
 },{"./views/SignIn.js":"85knE","./views/SignUp.js":"jPeMQ","./views/GuestGuide.js":"fdhWh","./views/HostGuide.js":"Kckvv","./views/Profile.js":"2fU3z","./views/GuestHome.js":"kXOFZ","./views/HostHome.js":"d2S5w","./views/GuestBookings.js":"66jdU","./views/HostBookings.js":"bmUJu","./Auth.js":"aJFb5","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"85knE":[function(require,module,exports,__globalThis) {
 // views/SignIn.js
+// views/SignIn.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _litHtml = require("lit-html");
@@ -30053,7 +30054,7 @@ class SignInView {
                 email,
                 password
             });
-            this.loading = false;
+        // Auth.signIn() handles redirection
         } catch (err) {
             this.loading = false;
             console.error("[SignInView] Login error:", err);
@@ -30123,8 +30124,10 @@ exports.default = new SignInView();
 // auth.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
+// 👇 Utility for checking if token is expired (can be reused in apiFetch)
+parcelHelpers.export(exports, "isTokenExpired", ()=>isTokenExpired);
 var _routerJs = require("./Router.js");
-var _toastJs = require("./Toast.js");
+var _toastJs = require("./components/Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 var _appJs = require("./App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
@@ -30201,7 +30204,11 @@ const Auth = {
     },
     async check () {
         const token = localStorage.getItem("token");
-        if (!token) return false;
+        if (!token || isTokenExpired(token)) {
+            console.warn("[Auth] Token missing or expired");
+            this.signOut();
+            return false;
+        }
         try {
             const response = await fetch(`${(0, _appJsDefault.default).apiBase}/auth/validate`, {
                 headers: {
@@ -30209,14 +30216,15 @@ const Auth = {
                 }
             });
             if (!response.ok) {
-                localStorage.removeItem("token");
+                console.warn("[Auth] Token invalid on server");
+                this.signOut();
                 return false;
             }
             this.currentUser = await response.json();
             return true;
         } catch (err) {
             console.error("[Auth] check failed:", err.message);
-            localStorage.removeItem("token");
+            this.signOut();
             return false;
         }
     },
@@ -30227,43 +30235,18 @@ const Auth = {
         (0, _routerJs.gotoRoute)("/signin");
     }
 };
+function isTokenExpired(token) {
+    try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        return payload.exp * 1000 < Date.now();
+    } catch (err) {
+        console.error("[Auth] Failed to decode token:", err);
+        return true;
+    }
+}
 exports.default = Auth;
 
-},{"./Router.js":"b5tFI","./Toast.js":"8c3DX","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8c3DX":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _litHtml = require("lit-html");
-const Toast = {
-    show (message, variant = "primary", duration = 3000) {
-        let container = document.getElementById("toast-container");
-        if (!container) {
-            container = document.createElement("div");
-            container.id = "toast-container";
-            document.body.appendChild(container);
-        }
-        const toast = document.createElement("div");
-        toast.className = "toast-wrapper";
-        const template = (0, _litHtml.html)`
-      <sl-alert
-        variant="${variant}"
-        duration="${duration}"
-        closable
-        class="toast"
-      >
-        <sl-icon slot="icon" name="info-circle"></sl-icon>
-        ${message}
-      </sl-alert>
-    `;
-        (0, _litHtml.render)(template, toast);
-        container.appendChild(toast);
-        setTimeout(()=>{
-            toast.remove();
-        }, duration + 300);
-    }
-};
-exports.default = Toast;
-
-},{"lit-html":"l15as","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"eSyC4":[function(require,module,exports,__globalThis) {
+},{"./Router.js":"b5tFI","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","./components/Toast.js":"eSyC4"}],"eSyC4":[function(require,module,exports,__globalThis) {
 // Toast.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -30312,6 +30295,8 @@ var _toastJs = require("../components/Toast.js");
 var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 var _dompurify = require("dompurify");
 var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
+var _apiFetchJs = require("../apiFetch.js"); // ✅ import
+var _apiFetchJsDefault = parcelHelpers.interopDefault(_apiFetchJs);
 class SignUpView {
     constructor(){
         this.loading = false;
@@ -30341,15 +30326,25 @@ class SignUpView {
             return;
         }
         try {
-            await (0, _authJsDefault.default).signUp({
-                firstName,
-                lastName,
-                email,
-                password,
-                accessLevel
+            const response = await (0, _apiFetchJsDefault.default)(`${(0, _appJsDefault.default).apiBase}/auth/signup`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    firstName,
+                    lastName,
+                    email,
+                    password,
+                    accessLevel
+                })
             });
-            this.loading = false;
-            this.render();
+            if (!response.ok) throw new Error((await response.json()).message);
+            const { accessToken, user } = await response.json();
+            localStorage.setItem("token", accessToken);
+            (0, _authJsDefault.default).currentUser = user;
+            (0, _toastJsDefault.default).show("Account created!");
+            (0, _routerJs.gotoRoute)(user.accessLevel === 1 ? "/guest-guide" : "/host-guide");
         } catch (err) {
             this.loading = false;
             (0, _toastJsDefault.default).show(`Sign-up failed: ${err.message || "Please try again."}`);
@@ -30367,14 +30362,12 @@ class SignUpView {
               name="firstName"
               label="First Name"
               required
-              aria-required="true"
               autocomplete="given-name"
             ></sl-input>
             <sl-input
               name="lastName"
               label="Last Name"
               required
-              aria-required="true"
               autocomplete="family-name"
             ></sl-input>
             <sl-input
@@ -30382,7 +30375,6 @@ class SignUpView {
               type="email"
               label="Email"
               required
-              aria-required="true"
               autocomplete="email"
             ></sl-input>
             <sl-input
@@ -30390,7 +30382,6 @@ class SignUpView {
               type="password"
               label="Password"
               required
-              aria-required="true"
               autocomplete="new-password"
               help-text=${this.passwordMismatch ? "Passwords do not match" : ""}
               ?invalid=${this.passwordMismatch}
@@ -30400,7 +30391,6 @@ class SignUpView {
               type="password"
               label="Confirm Password"
               required
-              aria-required="true"
               autocomplete="new-password"
               help-text=${this.passwordMismatch ? "Passwords do not match" : ""}
               ?invalid=${this.passwordMismatch}
@@ -30409,7 +30399,6 @@ class SignUpView {
               name="accessLevel"
               label="Register as"
               required
-              aria-required="true"
               value="1"
             >
               <sl-radio value="1">Guest</sl-radio>
@@ -30445,7 +30434,7 @@ class SignUpView {
 }
 exports.default = new SignUpView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../components/Toast.js":"eSyC4","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"1IHUz":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../Router.js":"b5tFI","../components/Toast.js":"eSyC4","dompurify":"1IHUz","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","../apiFetch.js":"96g6P"}],"1IHUz":[function(require,module,exports,__globalThis) {
 /*! @license DOMPurify 3.2.6 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.2.6/LICENSE */ (function(global, factory) {
     module.exports = factory();
 })(this, function() {
@@ -32165,7 +32154,45 @@ exports.default = new SignUpView();
     return purify;
 });
 
-},{}],"fdhWh":[function(require,module,exports,__globalThis) {
+},{}],"96g6P":[function(require,module,exports,__globalThis) {
+// apiFetch.js
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _authJs = require("./Auth.js");
+var _authJsDefault = parcelHelpers.interopDefault(_authJs);
+var _routerJs = require("./Router.js");
+var _toastJs = require("./components/Toast.js");
+var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
+async function apiFetch(url, options = {}) {
+    const token = localStorage.getItem("token");
+    if (token && (0, _authJs.isTokenExpired)(token)) {
+        (0, _toastJsDefault.default).show("Session expired. Please sign in again.");
+        (0, _authJsDefault.default).signOut();
+        (0, _routerJs.gotoRoute)("/signin");
+        throw new Error("JWT expired");
+    }
+    if (token) options.headers = {
+        ...options.headers || {},
+        Authorization: `Bearer ${token}`
+    };
+    try {
+        const res = await fetch(url, options);
+        if (res.status === 401 || res.status === 403) {
+            (0, _toastJsDefault.default).show("Unauthorized. Please sign in again.");
+            (0, _authJsDefault.default).signOut();
+            (0, _routerJs.gotoRoute)("/signin");
+            throw new Error("Unauthorized or expired token");
+        }
+        return res;
+    } catch (err) {
+        (0, _toastJsDefault.default).show("Network error \u2013 please check your connection.");
+        console.error("[apiFetch] Error:", err);
+        throw err;
+    }
+}
+exports.default = apiFetch;
+
+},{"./Auth.js":"aJFb5","./Router.js":"b5tFI","./components/Toast.js":"eSyC4","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fdhWh":[function(require,module,exports,__globalThis) {
 // views/GuestGuide.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -32375,6 +32402,8 @@ var _dompurify = require("dompurify");
 var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
 var _headerJs = require("../components/Header.js");
 var _headerJsDefault = parcelHelpers.interopDefault(_headerJs);
+var _apiFetchJs = require("../apiFetch.js");
+var _apiFetchJsDefault = parcelHelpers.interopDefault(_apiFetchJs);
 class ProfileView {
     constructor(){
         this.user = null;
@@ -32390,12 +32419,7 @@ class ProfileView {
     }
     async fetchUser() {
         try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${(0, _appJsDefault.default).apiBase}/users/${(0, _authJsDefault.default).currentUser.id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            const response = await (0, _apiFetchJsDefault.default)(`${(0, _appJsDefault.default).apiBase}/users/${(0, _authJsDefault.default).currentUser.id}`);
             if (!response.ok) throw new Error("Failed to fetch profile");
             this.user = await response.json();
             this.avatarPreview = this.user.avatar.startsWith("/uploads") ? `${(0, _appJsDefault.default).apiBase}${this.user.avatar}` : "/images/default-avatar.png";
@@ -32427,18 +32451,14 @@ class ProfileView {
         const bio = (0, _dompurifyDefault.default).sanitize(form.querySelector('[name="bio"]').value.trim());
         const avatar = form.querySelector('[name="avatar"]').files[0];
         try {
-            const token = localStorage.getItem("token");
             const formData = new FormData();
             formData.append("firstName", firstName);
             formData.append("lastName", lastName);
             formData.append("email", email);
             formData.append("bio", bio);
             if (avatar) formData.append("avatar", avatar);
-            const response = await fetch(`${(0, _appJsDefault.default).apiBase}/users/${(0, _authJsDefault.default).currentUser.id}`, {
+            const response = await (0, _apiFetchJsDefault.default)(`${(0, _appJsDefault.default).apiBase}/users/${(0, _authJsDefault.default).currentUser.id}`, {
                 method: "PUT",
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
                 body: formData
             });
             if (!response.ok) throw new Error((await response.json()).message);
@@ -32471,11 +32491,9 @@ class ProfileView {
             return;
         }
         try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${(0, _appJsDefault.default).apiBase}/users/${(0, _authJsDefault.default).currentUser.id}/password`, {
+            const response = await (0, _apiFetchJsDefault.default)(`${(0, _appJsDefault.default).apiBase}/users/${(0, _authJsDefault.default).currentUser.id}/password`, {
                 method: "PUT",
                 headers: {
-                    Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
@@ -32627,8 +32645,9 @@ class ProfileView {
 }
 exports.default = new ProfileView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3PJ6N":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","../apiFetch.js":"96g6P"}],"3PJ6N":[function(require,module,exports,__globalThis) {
 // components/header.js
+// components/Header.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _litHtml = require("lit-html");
@@ -32647,6 +32666,7 @@ const Header = {
           >
             Chinwag
           </h1>
+
           <sl-tab-group class="nav-tabs">
             <sl-tab
               slot="nav"
@@ -32695,44 +32715,44 @@ var _dompurify = require("dompurify");
 var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
 var _headerJs = require("../components/Header.js");
 var _headerJsDefault = parcelHelpers.interopDefault(_headerJs);
+var _apiFetchJs = require("../apiFetch.js");
+var _apiFetchJsDefault = parcelHelpers.interopDefault(_apiFetchJs);
 class GuestHomeView {
     constructor(){
-        this.events = null; // null = loading state
+        this.events = null;
         this.filter = "all";
     }
     init() {
         document.title = "Guest Home";
         this.handleTabChange = this.handleTabChange.bind(this);
-        this.render(); // initial render before fetch
-        this.fetchEvents(); // get events and re-render
+        this.render();
+        this.fetchEvents();
     }
     async fetchEvents() {
         try {
             const query = this.filter === "all" ? "" : `?dateRange=${this.filter}`;
-            const response = await fetch(`${(0, _appJsDefault.default).apiBase}/events${query}`);
+            const response = await (0, _apiFetchJsDefault.default)(`${(0, _appJsDefault.default).apiBase}/events${query}`);
             if (!response.ok) throw new Error("Failed to fetch events");
             this.events = await response.json();
             this.render();
         } catch (err) {
             (0, _toastJsDefault.default).show("Error fetching events");
-            console.error(err);
-            this.events = []; // fallback to empty array on error
+            console.error("[GuestHome] fetchEvents error:", err);
+            this.events = [];
             this.render();
         }
     }
     handleTabChange(e) {
         this.filter = e.target.panel;
-        this.events = null; // reset to loading while fetching
+        this.events = null;
         this.render();
         this.fetchEvents();
     }
     async bookEvent(eventId) {
         try {
-            const token = localStorage.getItem("token");
-            const response = await fetch(`${(0, _appJsDefault.default).apiBase}/bookings`, {
+            const response = await (0, _apiFetchJsDefault.default)(`${(0, _appJsDefault.default).apiBase}/bookings`, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
@@ -32741,10 +32761,10 @@ class GuestHomeView {
             });
             if (!response.ok) throw new Error((await response.json()).message);
             (0, _toastJsDefault.default).show("Event booked!");
-            this.fetchEvents(); // refresh events to update seat count
+            this.fetchEvents(); // Refresh to update availability
         } catch (err) {
             (0, _toastJsDefault.default).show(err.message || "Booking failed");
-            console.error(err);
+            console.error("[GuestHome] bookEvent error:", err);
         }
     }
     render() {
@@ -32752,38 +32772,49 @@ class GuestHomeView {
       <div>
         ${(0, _headerJsDefault.default).render()}
         <div class="page-content">
-          <h1>Available Events</h1>
-          <div class="carousel-container">
+          <h1 class="guest-home-title">Have a chinwag...</h1>
+
+          <div class="tab-bar">
             <sl-tab-group @sl-tab-show=${this.handleTabChange}>
-              <sl-tab slot="nav" panel="all" ?active=${this.filter === "all"}
-                >All</sl-tab
-              >
               <sl-tab
                 slot="nav"
+                class="tab ${this.filter === "all" ? "active" : ""}"
+                panel="all"
+                ?active=${this.filter === "all"}
+              >
+                All
+              </sl-tab>
+              <sl-tab
+                slot="nav"
+                class="tab ${this.filter === "weekend" ? "active" : ""}"
                 panel="weekend"
                 ?active=${this.filter === "weekend"}
-                >This Weekend</sl-tab
               >
+                This Weekend
+              </sl-tab>
               <sl-tab
                 slot="nav"
+                class="tab ${this.filter === "nextWeek" ? "active" : ""}"
                 panel="nextWeek"
                 ?active=${this.filter === "nextWeek"}
-                >Next Week</sl-tab
               >
+                Next Week
+              </sl-tab>
             </sl-tab-group>
+          </div>
 
-            ${this.events === null ? (0, _litHtml.html)`<sl-spinner
-                  style="margin: 2rem auto; display: block;"
-                ></sl-spinner>` : (0, _litHtml.html)`
-                  <sl-carousel navigation pagination>
-                    ${this.events.map((event)=>(0, _litHtml.html)`
-                        <sl-carousel-item>
-                          <div class="event-card">
-                            <img
-                              src="${(0, _dompurifyDefault.default).sanitize(event.image)}"
-                              alt="${(0, _dompurifyDefault.default).sanitize(event.title)}"
-                              width="300"
-                            />
+          ${this.events === null ? (0, _litHtml.html)`<sl-spinner
+                style="margin: 2rem auto; display: block;"
+              ></sl-spinner>` : this.events.length === 0 ? (0, _litHtml.html)`<p>No events found for this filter.</p>` : (0, _litHtml.html)`
+                <sl-carousel navigation pagination>
+                  ${this.events.map((event)=>(0, _litHtml.html)`
+                      <sl-carousel-item>
+                        <div class="event-card">
+                          <img
+                            src="${(0, _dompurifyDefault.default).sanitize(event.image)}"
+                            alt="${(0, _dompurifyDefault.default).sanitize(event.title)}"
+                          />
+                          <div class="event-card-body">
                             <h2>${(0, _dompurifyDefault.default).sanitize(event.title)}</h2>
                             <p>${(0, _dompurifyDefault.default).sanitize(event.description)}</p>
                             <p>
@@ -32797,6 +32828,8 @@ class GuestHomeView {
                               Host: ${(0, _dompurifyDefault.default).sanitize(event.host.firstName)}
                               ${(0, _dompurifyDefault.default).sanitize(event.host.lastName)}
                             </p>
+                          </div>
+                          <div class="button-group">
                             <sl-button
                               @click=${()=>this.bookEvent(event._id)}
                               variant="primary"
@@ -32805,11 +32838,11 @@ class GuestHomeView {
                               Book Event
                             </sl-button>
                           </div>
-                        </sl-carousel-item>
-                      `)}
-                  </sl-carousel>
-                `}
-          </div>
+                        </div>
+                      </sl-carousel-item>
+                    `)}
+                </sl-carousel>
+              `}
         </div>
       </div>
     `;
@@ -32818,7 +32851,7 @@ class GuestHomeView {
 }
 exports.default = new GuestHomeView();
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"d2S5w":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","../apiFetch.js":"96g6P"}],"d2S5w":[function(require,module,exports,__globalThis) {
 // views/hosthome.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);

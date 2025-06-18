@@ -1,11 +1,11 @@
 // views/profile.js
-
 import { html, render } from "lit-html";
 import App from "../App.js";
 import Auth from "../Auth.js";
 import Toast from "../components/Toast.js";
 import DOMPurify from "dompurify";
 import Header from "../components/Header.js";
+import apiFetch from "../apiFetch.js";
 
 class ProfileView {
   constructor() {
@@ -24,12 +24,8 @@ class ProfileView {
 
   async fetchUser() {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${App.apiBase}/users/${Auth.currentUser.id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const response = await apiFetch(
+        `${App.apiBase}/users/${Auth.currentUser.id}`
       );
       if (!response.ok) throw new Error("Failed to fetch profile");
       this.user = await response.json();
@@ -76,7 +72,6 @@ class ProfileView {
     const avatar = form.querySelector('[name="avatar"]').files[0];
 
     try {
-      const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("firstName", firstName);
       formData.append("lastName", lastName);
@@ -84,14 +79,14 @@ class ProfileView {
       formData.append("bio", bio);
       if (avatar) formData.append("avatar", avatar);
 
-      const response = await fetch(
+      const response = await apiFetch(
         `${App.apiBase}/users/${Auth.currentUser.id}`,
         {
           method: "PUT",
-          headers: { Authorization: `Bearer ${token}` },
           body: formData,
         }
       );
+
       if (!response.ok) throw new Error((await response.json()).message);
 
       const updatedUser = await response.json();
@@ -130,18 +125,15 @@ class ProfileView {
     }
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
+      const response = await apiFetch(
         `${App.apiBase}/users/${Auth.currentUser.id}/password`,
         {
           method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ currentPassword, newPassword }),
         }
       );
+
       if (!response.ok) throw new Error((await response.json()).message);
       this.showPasswordDialog = false;
       Toast.show("Password updated");

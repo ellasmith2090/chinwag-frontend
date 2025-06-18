@@ -6,59 +6,58 @@ import Auth from "../Auth.js";
 import Toast from "../components/Toast.js";
 import DOMPurify from "dompurify";
 import Header from "../components/Header.js";
+import apiFetch from "../apiFetch.js";
 
 class GuestHomeView {
   constructor() {
-    this.events = null; // null = loading state
+    this.events = null;
     this.filter = "all";
   }
 
   init() {
     document.title = "Guest Home";
     this.handleTabChange = this.handleTabChange.bind(this);
-    this.render(); // initial render before fetch
-    this.fetchEvents(); // get events and re-render
+    this.render();
+    this.fetchEvents();
   }
 
   async fetchEvents() {
     try {
       const query = this.filter === "all" ? "" : `?dateRange=${this.filter}`;
-      const response = await fetch(`${App.apiBase}/events${query}`);
+      const response = await apiFetch(`${App.apiBase}/events${query}`);
       if (!response.ok) throw new Error("Failed to fetch events");
       this.events = await response.json();
       this.render();
     } catch (err) {
       Toast.show("Error fetching events");
-      console.error(err);
-      this.events = []; // fallback to empty array on error
+      console.error("[GuestHome] fetchEvents error:", err);
+      this.events = [];
       this.render();
     }
   }
 
   handleTabChange(e) {
     this.filter = e.target.panel;
-    this.events = null; // reset to loading while fetching
+    this.events = null;
     this.render();
     this.fetchEvents();
   }
 
   async bookEvent(eventId) {
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${App.apiBase}/bookings`, {
+      const response = await apiFetch(`${App.apiBase}/bookings`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ eventId }),
       });
       if (!response.ok) throw new Error((await response.json()).message);
       Toast.show("Event booked!");
-      this.fetchEvents(); // refresh events to update seat count
+      this.fetchEvents(); // Refresh to update availability
     } catch (err) {
       Toast.show(err.message || "Booking failed");
-      console.error(err);
+      console.error("[GuestHome] bookEvent error:", err);
     }
   }
 
@@ -67,41 +66,54 @@ class GuestHomeView {
       <div>
         ${Header.render()}
         <div class="page-content">
-          <h1>Available Events</h1>
-          <div class="carousel-container">
+          <h1 class="guest-home-title">Have a chinwag...</h1>
+
+          <div class="tab-bar">
             <sl-tab-group @sl-tab-show=${this.handleTabChange}>
-              <sl-tab slot="nav" panel="all" ?active=${this.filter === "all"}
-                >All</sl-tab
-              >
               <sl-tab
                 slot="nav"
+                class="tab ${this.filter === "all" ? "active" : ""}"
+                panel="all"
+                ?active=${this.filter === "all"}
+              >
+                All
+              </sl-tab>
+              <sl-tab
+                slot="nav"
+                class="tab ${this.filter === "weekend" ? "active" : ""}"
                 panel="weekend"
                 ?active=${this.filter === "weekend"}
-                >This Weekend</sl-tab
               >
+                This Weekend
+              </sl-tab>
               <sl-tab
                 slot="nav"
+                class="tab ${this.filter === "nextWeek" ? "active" : ""}"
                 panel="nextWeek"
                 ?active=${this.filter === "nextWeek"}
-                >Next Week</sl-tab
               >
+                Next Week
+              </sl-tab>
             </sl-tab-group>
+          </div>
 
-            ${this.events === null
-              ? html`<sl-spinner
-                  style="margin: 2rem auto; display: block;"
-                ></sl-spinner>`
-              : html`
-                  <sl-carousel navigation pagination>
-                    ${this.events.map(
-                      (event) => html`
-                        <sl-carousel-item>
-                          <div class="event-card">
-                            <img
-                              src="${DOMPurify.sanitize(event.image)}"
-                              alt="${DOMPurify.sanitize(event.title)}"
-                              width="300"
-                            />
+          ${this.events === null
+            ? html`<sl-spinner
+                style="margin: 2rem auto; display: block;"
+              ></sl-spinner>`
+            : this.events.length === 0
+            ? html`<p>No events found for this filter.</p>`
+            : html`
+                <sl-carousel navigation pagination>
+                  ${this.events.map(
+                    (event) => html`
+                      <sl-carousel-item>
+                        <div class="event-card">
+                          <img
+                            src="${DOMPurify.sanitize(event.image)}"
+                            alt="${DOMPurify.sanitize(event.title)}"
+                          />
+                          <div class="event-card-body">
                             <h2>${DOMPurify.sanitize(event.title)}</h2>
                             <p>${DOMPurify.sanitize(event.description)}</p>
                             <p>
@@ -115,6 +127,8 @@ class GuestHomeView {
                               Host: ${DOMPurify.sanitize(event.host.firstName)}
                               ${DOMPurify.sanitize(event.host.lastName)}
                             </p>
+                          </div>
+                          <div class="button-group">
                             <sl-button
                               @click=${() => this.bookEvent(event._id)}
                               variant="primary"
@@ -123,12 +137,12 @@ class GuestHomeView {
                               Book Event
                             </sl-button>
                           </div>
-                        </sl-carousel-item>
-                      `
-                    )}
-                  </sl-carousel>
-                `}
-          </div>
+                        </div>
+                      </sl-carousel-item>
+                    `
+                  )}
+                </sl-carousel>
+              `}
         </div>
       </div>
     `;

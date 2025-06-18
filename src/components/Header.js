@@ -1,12 +1,15 @@
 // components/header.js
 
-import { html, render } from "lit-html";
+// components/Header.js
+
+import { html } from "lit-html";
 import Auth from "../Auth.js";
 import { gotoRoute } from "../Router.js";
 
 const Header = {
   render() {
     const isHost = Auth.currentUser?.accessLevel === 2;
+
     return html`
       <header class="site-header">
         <div class="header-content">
@@ -16,6 +19,7 @@ const Header = {
           >
             Chinwag
           </h1>
+
           <sl-tab-group class="nav-tabs">
             <sl-tab
               slot="nav"

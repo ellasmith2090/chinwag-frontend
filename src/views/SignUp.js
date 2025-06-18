@@ -6,6 +6,7 @@ import Auth from "../Auth.js";
 import { gotoRoute } from "../Router.js";
 import Toast from "../components/Toast.js";
 import DOMPurify from "dompurify";
+import apiFetch from "../apiFetch.js"; // ✅ import
 
 class SignUpView {
   constructor() {
@@ -51,9 +52,26 @@ class SignUpView {
     }
 
     try {
-      await Auth.signUp({ firstName, lastName, email, password, accessLevel });
-      this.loading = false;
-      this.render();
+      const response = await apiFetch(`${App.apiBase}/auth/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          password,
+          accessLevel,
+        }),
+      });
+
+      if (!response.ok) throw new Error((await response.json()).message);
+
+      const { accessToken, user } = await response.json();
+      localStorage.setItem("token", accessToken);
+      Auth.currentUser = user;
+      Toast.show("Account created!");
+
+      gotoRoute(user.accessLevel === 1 ? "/guest-guide" : "/host-guide");
     } catch (err) {
       this.loading = false;
       Toast.show(`Sign-up failed: ${err.message || "Please try again."}`);
@@ -72,14 +90,12 @@ class SignUpView {
               name="firstName"
               label="First Name"
               required
-              aria-required="true"
               autocomplete="given-name"
             ></sl-input>
             <sl-input
               name="lastName"
               label="Last Name"
               required
-              aria-required="true"
               autocomplete="family-name"
             ></sl-input>
             <sl-input
@@ -87,7 +103,6 @@ class SignUpView {
               type="email"
               label="Email"
               required
-              aria-required="true"
               autocomplete="email"
             ></sl-input>
             <sl-input
@@ -95,7 +110,6 @@ class SignUpView {
               type="password"
               label="Password"
               required
-              aria-required="true"
               autocomplete="new-password"
               help-text=${this.passwordMismatch ? "Passwords do not match" : ""}
               ?invalid=${this.passwordMismatch}
@@ -105,7 +119,6 @@ class SignUpView {
               type="password"
               label="Confirm Password"
               required
-              aria-required="true"
               autocomplete="new-password"
               help-text=${this.passwordMismatch ? "Passwords do not match" : ""}
               ?invalid=${this.passwordMismatch}
@@ -114,7 +127,6 @@ class SignUpView {
               name="accessLevel"
               label="Register as"
               required
-              aria-required="true"
               value="1"
             >
               <sl-radio value="1">Guest</sl-radio>

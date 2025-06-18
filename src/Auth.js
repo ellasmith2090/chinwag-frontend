@@ -1,11 +1,12 @@
 // auth.js
 
 import { gotoRoute } from "./Router.js";
-import Toast from "./Toast.js";
+import Toast from "./components/Toast.js";
 import App from "./App.js";
 
 const Auth = {
   currentUser: null,
+
   async signIn({ email, password }) {
     try {
       console.log(
@@ -17,6 +18,7 @@ const Auth = {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+
       if (!response.ok) {
         const errorData = await response.text();
         console.error("[Auth] Sign-in response:", errorData);
@@ -27,10 +29,12 @@ const Auth = {
           throw new Error("Server returned invalid response");
         }
       }
+
       const { accessToken, user } = await response.json();
       localStorage.setItem("token", accessToken);
       this.currentUser = user;
       Toast.show("Welcome back!");
+
       gotoRoute(
         user.isFirstLogin
           ? user.accessLevel === 1
@@ -45,6 +49,7 @@ const Auth = {
       throw err;
     }
   },
+
   async signUp({ firstName, lastName, email, password, accessLevel }) {
     try {
       console.log(
@@ -62,6 +67,7 @@ const Auth = {
           accessLevel,
         }),
       });
+
       if (!response.ok) {
         const errorData = await response.text();
         console.error("[Auth] Sign-up response:", errorData);
@@ -72,6 +78,7 @@ const Auth = {
           throw new Error("Server returned invalid response");
         }
       }
+
       const { accessToken, user } = await response.json();
       localStorage.setItem("token", accessToken);
       this.currentUser = user;
@@ -82,25 +89,35 @@ const Auth = {
       throw err;
     }
   },
+
   async check() {
     const token = localStorage.getItem("token");
-    if (!token) return false;
+    if (!token || isTokenExpired(token)) {
+      console.warn("[Auth] Token missing or expired");
+      this.signOut();
+      return false;
+    }
+
     try {
       const response = await fetch(`${App.apiBase}/auth/validate`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       if (!response.ok) {
-        localStorage.removeItem("token");
+        console.warn("[Auth] Token invalid on server");
+        this.signOut();
         return false;
       }
+
       this.currentUser = await response.json();
       return true;
     } catch (err) {
       console.error("[Auth] check failed:", err.message);
-      localStorage.removeItem("token");
+      this.signOut();
       return false;
     }
   },
+
   signOut() {
     localStorage.removeItem("token");
     this.currentUser = null;
@@ -108,5 +125,16 @@ const Auth = {
     gotoRoute("/signin");
   },
 };
+
+// 👇 Utility for checking if token is expired (can be reused in apiFetch)
+export function isTokenExpired(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch (err) {
+    console.error("[Auth] Failed to decode token:", err);
+    return true;
+  }
+}
 
 export default Auth;

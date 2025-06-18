@@ -1,5 +1,7 @@
 // views/SignIn.js
 
+// views/SignIn.js
+
 import { html, render } from "lit-html";
 import App from "../App.js";
 import Auth from "../Auth.js";
@@ -39,12 +41,14 @@ class SignInView {
 
     try {
       await Auth.signIn({ email, password });
-      this.loading = false;
+      // Auth.signIn() handles redirection
     } catch (err) {
       this.loading = false;
+
       if (process.env.NODE_ENV === "development") {
         console.error("[SignInView] Login error:", err);
       }
+
       if (err.message.includes("User doesn't exist")) {
         Toast.show("No account found. Redirecting to Sign Up...", "warning");
         setTimeout(() => gotoRoute("/signup"), 2000);
@@ -53,6 +57,7 @@ class SignInView {
       } else {
         Toast.show(`Login failed: ${err.message}`, "danger");
       }
+
       this.render();
     }
   }
