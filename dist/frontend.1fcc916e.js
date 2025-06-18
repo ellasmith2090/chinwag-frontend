@@ -32697,13 +32697,14 @@ var _headerJs = require("../components/Header.js");
 var _headerJsDefault = parcelHelpers.interopDefault(_headerJs);
 class GuestHomeView {
     constructor(){
-        this.events = [];
+        this.events = null; // null = loading state
         this.filter = "all";
     }
     init() {
         document.title = "Guest Home";
-        this.fetchEvents();
         this.handleTabChange = this.handleTabChange.bind(this);
+        this.render(); // initial render before fetch
+        this.fetchEvents(); // get events and re-render
     }
     async fetchEvents() {
         try {
@@ -32715,10 +32716,14 @@ class GuestHomeView {
         } catch (err) {
             (0, _toastJsDefault.default).show("Error fetching events");
             console.error(err);
+            this.events = []; // fallback to empty array on error
+            this.render();
         }
     }
     handleTabChange(e) {
         this.filter = e.target.panel;
+        this.events = null; // reset to loading while fetching
+        this.render();
         this.fetchEvents();
     }
     async bookEvent(eventId) {
@@ -32736,7 +32741,7 @@ class GuestHomeView {
             });
             if (!response.ok) throw new Error((await response.json()).message);
             (0, _toastJsDefault.default).show("Event booked!");
-            this.fetchEvents();
+            this.fetchEvents(); // refresh events to update seat count
         } catch (err) {
             (0, _toastJsDefault.default).show(err.message || "Booking failed");
             console.error(err);
@@ -32750,39 +32755,60 @@ class GuestHomeView {
           <h1>Available Events</h1>
           <div class="carousel-container">
             <sl-tab-group @sl-tab-show=${this.handleTabChange}>
-              <sl-tab slot="nav" panel="all" active>All</sl-tab>
-              <sl-tab slot="nav" panel="weekend">This Weekend</sl-tab>
-              <sl-tab slot="nav" panel="nextWeek">Next Week</sl-tab>
+              <sl-tab slot="nav" panel="all" ?active=${this.filter === "all"}
+                >All</sl-tab
+              >
+              <sl-tab
+                slot="nav"
+                panel="weekend"
+                ?active=${this.filter === "weekend"}
+                >This Weekend</sl-tab
+              >
+              <sl-tab
+                slot="nav"
+                panel="nextWeek"
+                ?active=${this.filter === "nextWeek"}
+                >Next Week</sl-tab
+              >
             </sl-tab-group>
-            <sl-carousel navigation pagination>
-              ${this.events.map((event)=>(0, _litHtml.html)`
-                  <sl-carousel-item>
-                    <div class="event-card">
-                      <img
-                        src="${(0, _dompurifyDefault.default).sanitize(event.image)}"
-                        alt="${(0, _dompurifyDefault.default).sanitize(event.title)}"
-                        width="300"
-                      />
-                      <h2>${(0, _dompurifyDefault.default).sanitize(event.title)}</h2>
-                      <p>${(0, _dompurifyDefault.default).sanitize(event.description)}</p>
-                      <p>Date: ${new Date(event.date).toLocaleString()}</p>
-                      <p>Location: ${(0, _dompurifyDefault.default).sanitize(event.location)}</p>
-                      <p>Seats Available: ${event.seatsAvailable}</p>
-                      <p>
-                        Host: ${(0, _dompurifyDefault.default).sanitize(event.host.firstName)}
-                        ${(0, _dompurifyDefault.default).sanitize(event.host.lastName)}
-                      </p>
-                      <sl-button
-                        @click=${()=>this.bookEvent(event._id)}
-                        variant="primary"
-                        ?disabled=${event.seatsAvailable === 0}
-                      >
-                        Book Event
-                      </sl-button>
-                    </div>
-                  </sl-carousel-item>
-                `)}
-            </sl-carousel>
+
+            ${this.events === null ? (0, _litHtml.html)`<sl-spinner
+                  style="margin: 2rem auto; display: block;"
+                ></sl-spinner>` : (0, _litHtml.html)`
+                  <sl-carousel navigation pagination>
+                    ${this.events.map((event)=>(0, _litHtml.html)`
+                        <sl-carousel-item>
+                          <div class="event-card">
+                            <img
+                              src="${(0, _dompurifyDefault.default).sanitize(event.image)}"
+                              alt="${(0, _dompurifyDefault.default).sanitize(event.title)}"
+                              width="300"
+                            />
+                            <h2>${(0, _dompurifyDefault.default).sanitize(event.title)}</h2>
+                            <p>${(0, _dompurifyDefault.default).sanitize(event.description)}</p>
+                            <p>
+                              Date: ${new Date(event.date).toLocaleString()}
+                            </p>
+                            <p>
+                              Location: ${(0, _dompurifyDefault.default).sanitize(event.location)}
+                            </p>
+                            <p>Seats Available: ${event.seatsAvailable}</p>
+                            <p>
+                              Host: ${(0, _dompurifyDefault.default).sanitize(event.host.firstName)}
+                              ${(0, _dompurifyDefault.default).sanitize(event.host.lastName)}
+                            </p>
+                            <sl-button
+                              @click=${()=>this.bookEvent(event._id)}
+                              variant="primary"
+                              ?disabled=${event.seatsAvailable === 0}
+                            >
+                              Book Event
+                            </sl-button>
+                          </div>
+                        </sl-carousel-item>
+                      `)}
+                  </sl-carousel>
+                `}
           </div>
         </div>
       </div>
