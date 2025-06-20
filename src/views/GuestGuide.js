@@ -78,13 +78,13 @@ class GuestGuideView {
               </div>
             </div>
             <div class="guide-cta">
-              <button
+              <sl-button
                 class="button primary large"
                 @click=${this.handleGetStarted.bind(this)}
                 aria-label="Get Started as a Guest"
               >
                 Get Started
-              </button>
+              </sl-button>
             </div>
           </div>
           <div class="guide-footer"></div>

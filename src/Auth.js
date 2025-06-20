@@ -1,5 +1,5 @@
 // auth.js
-
+// auth.js
 import { gotoRoute } from "./Router.js";
 import App from "./App.js";
 
@@ -67,21 +67,13 @@ const Auth = {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error("[Auth] Sign-up response:", errorData);
-        try {
-          const jsonError = JSON.parse(errorData);
-          throw new Error(jsonError.message || "Sign-up failed");
-        } catch {
-          throw new Error("Server returned invalid response");
-        }
-      }
+      if (!response.ok) throw new Error((await response.json()).message);
 
       const { accessToken, user } = await response.json();
       localStorage.setItem("token", accessToken);
-      this.currentUser = user;
+      Auth.currentUser = user;
       document.querySelector("app-toast")?.show("Account created!", "info");
+
       gotoRoute(user.accessLevel === 1 ? "/guest-guide" : "/host-guide");
     } catch (err) {
       console.error("[Auth] signUp failed:", err.message);
@@ -93,7 +85,6 @@ const Auth = {
     const token = localStorage.getItem("token");
     if (!token || isTokenExpired(token)) {
       console.warn("[Auth] Token missing or expired");
-      this.signOut();
       return false;
     }
 
@@ -104,7 +95,6 @@ const Auth = {
 
       if (!response.ok) {
         console.warn("[Auth] Token invalid on server");
-        this.signOut();
         return false;
       }
 
@@ -112,7 +102,6 @@ const Auth = {
       return true;
     } catch (err) {
       console.error("[Auth] check failed:", err.message);
-      this.signOut();
       return false;
     }
   },

@@ -170,7 +170,7 @@ class ProfileView {
         <app-header></app-header>
         <div class="page-content">
           ${this.loading
-            ? html`<div>Loading...</div>`
+            ? html`<sl-spinner></sl-spinner>`
             : html`
                 <h1>Your Profile</h1>
                 <div class="avatar-section">
@@ -196,69 +196,72 @@ class ProfileView {
                         accept="image/png,image/jpeg"
                         @change=${this.handleAvatarChange.bind(this)}
                         ?disabled=${this.fileLoading}
+                        hidden
                       />
-                      <button ?disabled=${this.fileLoading}>
+                      <sl-button
+                        ?disabled=${this.fileLoading}
+                        ?loading=${this.fileLoading}
+                      >
                         Choose Image
-                      </button>
+                      </sl-button>
                     </label>
                     ${this.selectedFile
                       ? html`
-                          <button @click=${this.resetAvatarPreview.bind(this)}>
+                          <sl-button
+                            variant="text"
+                            @click=${this.resetAvatarPreview.bind(this)}
+                          >
                             Remove Selected Image
-                          </button>
+                          </sl-button>
                         `
                       : ""}
                   </div>
                 </div>
                 <div class="form-wrapper">
                   <form @submit=${this.submitHandler.bind(this)}>
-                    <label>
-                      First Name
-                      <input
-                        name="firstName"
-                        value="${DOMPurify.sanitize(this.user.firstName)}"
-                        required
-                      />
-                    </label>
-                    <label>
-                      Last Name
-                      <input
-                        name="lastName"
-                        value="${DOMPurify.sanitize(this.user.lastName)}"
-                        required
-                      />
-                    </label>
-                    <label>
-                      Email
-                      <input
-                        name="email"
-                        type="email"
-                        value="${DOMPurify.sanitize(this.user.email)}"
-                        required
-                      />
-                    </label>
-                    <label>
-                      New Password
-                      <input name="newPassword" type="password" />
-                    </label>
-                    <label>
-                      Confirm New Password
-                      <input
-                        name="confirmPassword"
-                        type="password"
-                        class=${this.passwordMismatch ? "invalid" : ""}
-                      />
-                      ${this.passwordMismatch
-                        ? html`<span>Passwords do not match</span>`
+                    <sl-input
+                      name="firstName"
+                      label="First Name"
+                      value="${DOMPurify.sanitize(this.user.firstName)}"
+                      required
+                    ></sl-input>
+                    <sl-input
+                      name="lastName"
+                      label="Last Name"
+                      value="${DOMPurify.sanitize(this.user.lastName)}"
+                      required
+                    ></sl-input>
+                    <sl-input
+                      name="email"
+                      type="email"
+                      label="Email"
+                      value="${DOMPurify.sanitize(this.user.email)}"
+                      required
+                    ></sl-input>
+                    <sl-input
+                      name="newPassword"
+                      type="password"
+                      label="New Password"
+                      autocomplete="new-password"
+                    ></sl-input>
+                    <sl-input
+                      name="confirmPassword"
+                      type="password"
+                      label="Confirm New Password"
+                      autocomplete="new-password"
+                      help-text=${this.passwordMismatch
+                        ? "Passwords do not match"
                         : ""}
-                    </label>
-                    <button
+                      ?invalid=${this.passwordMismatch}
+                    ></sl-input>
+                    <sl-button
                       type="submit"
-                      class="button primary"
+                      variant="primary"
                       ?disabled=${this.saving}
+                      ?loading=${this.saving}
                     >
                       ${this.saving ? "Saving..." : "Save Changes"}
-                    </button>
+                    </sl-button>
                   </form>
                 </div>
               `}

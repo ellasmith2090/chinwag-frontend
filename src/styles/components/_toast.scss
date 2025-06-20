@@ -2,7 +2,7 @@
 
 @use "../abstracts/variables" as vars;
 
-.toast {
+app-toast {
   background: vars.$grey-dark;
   color: vars.$white;
   padding: 0.75rem 1.25rem;
@@ -19,14 +19,14 @@
   z-index: 9999;
 }
 
-.toast.visible {
+app-toast[visible] {
   opacity: 1;
 }
 
-.toast.success {
+app-toast[data-type="success"] {
   background: vars.$primary;
 }
 
-.toast.danger {
+app-toast[data-type="danger"] {
   background: vars.$toast-danger;
 }

@@ -89,54 +89,49 @@ class SignUpView {
   render() {
     const template = html`
       <div>
-        <app-header></app-header>
+        ${Auth.currentUser ? html`<app-header></app-header>` : ""}
         <div class="page-content page-centered" role="main">
           <h1>Create Your Account</h1>
           <div class="form-wrapper" aria-label="Sign Up Form">
             <form @submit=${this.submitHandler.bind(this)}>
-              <label>
-                First Name
-                <input name="firstName" required autocomplete="given-name" />
-              </label>
-              <label>
-                Last Name
-                <input name="lastName" required autocomplete="family-name" />
-              </label>
-              <label>
-                Email
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  autocomplete="email"
-                />
-              </label>
-              <label>
-                Password
-                <input
-                  name="password"
-                  type="password"
-                  required
-                  autocomplete="new-password"
-                  class=${this.passwordMismatch ? "invalid" : ""}
-                />
-                ${this.passwordMismatch
-                  ? html`<span>Passwords do not match</span>`
+              <sl-input
+                name="firstName"
+                label="First Name"
+                required
+                autocomplete="given-name"
+              ></sl-input>
+              <sl-input
+                name="lastName"
+                label="Last Name"
+                required
+                autocomplete="family-name"
+              ></sl-input>
+              <sl-input
+                name="email"
+                type="email"
+                label="Email"
+                required
+                autocomplete="email"
+              ></sl-input>
+              <sl-input
+                name="password"
+                type="password"
+                label="Password"
+                required
+                autocomplete="new-password"
+                ?invalid=${this.passwordMismatch}
+              ></sl-input>
+              <sl-input
+                name="confirmPassword"
+                type="password"
+                label="Confirm Password"
+                required
+                autocomplete="new-password"
+                help-text=${this.passwordMismatch
+                  ? "Passwords do not match"
                   : ""}
-              </label>
-              <label>
-                Confirm Password
-                <input
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  autocomplete="new-password"
-                  class=${this.passwordMismatch ? "invalid" : ""}
-                />
-                ${this.passwordMismatch
-                  ? html`<span>Passwords do not match</span>`
-                  : ""}
-              </label>
+                ?invalid=${this.passwordMismatch}
+              ></sl-input>
               <fieldset>
                 <legend>Register as</legend>
                 <label>
@@ -148,13 +143,14 @@ class SignUpView {
                   Host
                 </label>
               </fieldset>
-              <button
+              <sl-button
                 type="submit"
-                class="button primary"
+                variant="primary"
                 ?disabled=${this.loading}
+                ?loading=${this.loading}
               >
                 ${this.loading ? "Signing Up..." : "Sign Up"}
-              </button>
+              </sl-button>
             </form>
             <p>
               Already have an account?

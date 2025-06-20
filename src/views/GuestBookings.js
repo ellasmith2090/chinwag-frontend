@@ -1,5 +1,4 @@
 // views/GuestBookings.js
-
 import { html, render } from "lit-html";
 import App from "../App.js";
 import Auth from "../Auth.js";
@@ -103,24 +102,24 @@ class GuestBookingsView {
           <h1>Your Bookings</h1>
 
           <div class="tab-bar">
-            <button
+            <sl-button
               class="page-tab ${this.activeFilter === "Upcoming"
                 ? "active"
                 : ""}"
               @click=${() => this.handleTabClick("Upcoming")}
             >
               Upcoming
-            </button>
-            <button
+            </sl-button>
+            <sl-button
               class="page-tab ${this.activeFilter === "Past" ? "active" : ""}"
               @click=${() => this.handleTabClick("Past")}
             >
               Past
-            </button>
+            </sl-button>
           </div>
 
           ${this.loading
-            ? html`<div class="spinner">Loading...</div>`
+            ? html`<sl-spinner></sl-spinner>`
             : filteredBookings.length === 0
             ? html`<p>No ${this.activeFilter.toLowerCase()} bookings found.</p>`
             : html`
@@ -163,24 +162,24 @@ class GuestBookingsView {
                           ${DOMPurify.sanitize(booking.event.host.email)}
                         </p>
                         <div class="card-footer">
-                          <button
+                          <sl-button
                             class="button primary"
                             @click=${() =>
                               window.open(`mailto:${booking.event.host.email}`)}
                             aria-label="Contact Host"
                           >
                             Contact Host
-                          </button>
+                          </sl-button>
                           ${booking.status === "confirmed"
                             ? html`
-                                <button
+                                <sl-button
                                   class="button danger"
                                   @click=${() =>
                                     this.cancelBooking(booking._id)}
                                   aria-label="Cancel Booking"
                                 >
                                   Cancel Booking
-                                </button>
+                                </sl-button>
                               `
                             : ""}
                         </div>
@@ -196,14 +195,14 @@ class GuestBookingsView {
                     <h2>Confirm Cancellation</h2>
                     <p>Are you sure you want to cancel this booking?</p>
                     <div class="dialog-footer">
-                      <button
+                      <sl-button
                         class="button primary"
                         @click=${() =>
                           this.confirmCancel(this.cancellingBookingId)}
                       >
                         Confirm
-                      </button>
-                      <button
+                      </sl-button>
+                      <sl-button
                         class="button"
                         @click=${() => {
                           this.cancellingBookingId = null;
@@ -211,7 +210,7 @@ class GuestBookingsView {
                         }}
                       >
                         Cancel
-                      </button>
+                      </sl-button>
                     </div>
                   </div>
                 </div>

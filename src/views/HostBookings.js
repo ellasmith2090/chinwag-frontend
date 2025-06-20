@@ -115,7 +115,7 @@ class HostBookingsView {
         <div class="page-content">
           <h1>Your Event Bookings</h1>
           ${this.loading
-            ? html`<div class="spinner">Loading...</div>`
+            ? html`<sl-spinner></sl-spinner>`
             : eventGroups.length === 0
             ? html`<p>No bookings found for your events.</p>`
             : eventGroups.map(
@@ -153,16 +153,16 @@ class HostBookingsView {
                             </div>
                             <div>
                               <strong>Notes:</strong>
-                              <input
+                              <sl-input
                                 value="${DOMPurify.sanitize(
                                   booking.hostNotes || ""
                                 )}"
-                                @change=${(e) =>
+                                @sl-change=${(e) =>
                                   this.updateNote(booking._id, e.target.value)}
-                              />
+                              ></sl-input>
                             </div>
                             <div class="card-footer">
-                              <button
+                              <sl-button
                                 class="button danger"
                                 @click=${() => this.removeBooking(booking._id)}
                                 aria-label="Remove ${DOMPurify.sanitize(
@@ -170,7 +170,7 @@ class HostBookingsView {
                                 )}"
                               >
                                 Remove
-                              </button>
+                              </sl-button>
                             </div>
                           </div>
                         `
@@ -186,14 +186,14 @@ class HostBookingsView {
                     <h2>Confirm Removal</h2>
                     <p>Are you sure you want to remove this guest?</p>
                     <div class="dialog-footer">
-                      <button
+                      <sl-button
                         class="button primary"
                         @click=${() =>
                           this.confirmRemove(this.removingBookingId)}
                       >
                         Confirm
-                      </button>
-                      <button
+                      </sl-button>
+                      <sl-button
                         class="button"
                         @click=${() => {
                           this.removingBookingId = null;
@@ -201,7 +201,7 @@ class HostBookingsView {
                         }}
                       >
                         Cancel
-                      </button>
+                      </sl-button>
                     </div>
                   </div>
                 </div>

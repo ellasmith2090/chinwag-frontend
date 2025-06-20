@@ -1,8 +1,13 @@
 // styles/vendors/shoelace.scss
 
 @use "sass:color";
+@use "@shoelace-style/shoelace/dist/themes/light" as sl;
 @use "../abstracts/variables" as vars;
 
+// Ensure Shoelace base styles are applied
+@include sl.theme-light();
+
+// Customizations
 sl-button::part(base) {
   background-color: vars.$text-color;
   color: vars.$white;

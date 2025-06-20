@@ -1,5 +1,7 @@
 // components/header.js
 
+// components/header.js
+
 import { LitElement, html } from "lit";
 import Auth from "../Auth.js";
 import { gotoRoute } from "../Router.js";

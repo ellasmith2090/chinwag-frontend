@@ -1,5 +1,4 @@
 // views/HostGuide.js
-
 import { html, render } from "lit-html";
 import App from "../App.js";
 import Auth from "../Auth.js";
@@ -78,13 +77,13 @@ class HostGuideView {
               </div>
             </div>
             <div class="guide-cta">
-              <button
+              <sl-button
                 class="button primary large"
                 @click=${this.handleGetStarted.bind(this)}
                 aria-label="Get Started as a Host"
               >
                 Get Started
-              </button>
+              </sl-button>
             </div>
           </div>
           <div class="guide-footer"></div>

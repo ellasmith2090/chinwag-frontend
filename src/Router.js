@@ -1,5 +1,7 @@
 // router.js
 
+// router.js
+
 import SignInView from "./views/SignIn.js";
 import SignUpView from "./views/SignUp.js";
 import GuestGuideView from "./views/GuestGuide.js";
@@ -89,8 +91,11 @@ export function gotoRoute(path) {
   if (process.env.NODE_ENV === "development") {
     console.log("[Router] Navigating to:", path);
   }
-  history.pushState({}, "", path);
-  Router.route();
+  // Prevent infinite loop by checking current path
+  if (window.location.pathname !== path) {
+    history.pushState({}, "", path);
+    Router.route();
+  }
 }
 
 export function anchorRoute(e) {

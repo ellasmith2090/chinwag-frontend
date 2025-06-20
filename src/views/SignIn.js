@@ -73,39 +73,36 @@ class SignInView {
 
     const template = html`
       <div>
-        <app-header></app-header>
+        ${Auth.currentUser ? html`<app-header></app-header>` : ""}
         <div class="page-content page-centered" role="main">
           <h1>Sign In</h1>
           <div class="form-wrapper" aria-label="Sign In Form">
             <form @submit=${this.submitHandler.bind(this)}>
-              <label>
-                Email
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  autocomplete="email"
-                  aria-required="true"
-                />
-              </label>
-              <label>
-                Password
-                <input
-                  name="password"
-                  type="password"
-                  required
-                  autocomplete="current-password"
-                  aria-required="true"
-                />
-              </label>
-              <button
+              <sl-input
+                name="email"
+                type="email"
+                label="Email"
+                required
+                autocomplete="email"
+                aria-required="true"
+              ></sl-input>
+              <sl-input
+                name="password"
+                type="password"
+                label="Password"
+                required
+                autocomplete="current-password"
+                aria-required="true"
+              ></sl-input>
+              <sl-button
                 type="submit"
-                class="button primary"
+                variant="primary"
                 ?disabled=${this.loading}
+                ?loading=${this.loading}
                 aria-label="Submit Sign In"
               >
                 ${this.loading ? "Signing In..." : "Sign In"}
-              </button>
+              </sl-button>
             </form>
             <p>
               Don't have an account?
