@@ -4,7 +4,6 @@ import { html, render } from "lit-html";
 import App from "../App.js";
 import Auth from "../Auth.js";
 import { gotoRoute } from "../Router.js";
-import Toast from "../components/Toast.js";
 import DOMPurify from "dompurify";
 
 class GuestGuideView {
@@ -35,66 +34,66 @@ class GuestGuideView {
       Auth.currentUser.isFirstLogin = false;
       gotoRoute("/guest-home");
     } catch (err) {
-      Toast.show("Error getting started");
+      document
+        .querySelector("app-toast")
+        ?.show("Error getting started", "error");
       console.error(err);
+      this.render();
     }
   }
 
   render() {
     const template = html`
-      <div class="guide-page">
-        <div
-          class="guide-header"
-          style="background-image: url('/images/guide-header.png')"
-        ></div>
-        <div class="guide-content">
-          <div class="guide-text-block">
-            <h1 class="guide-title">Welcome!</h1>
-            <p class="guide-subtitle">
-              ${DOMPurify.sanitize(
-                "We’re so glad you’re here. Chinwag connects people who crave meaningful, in-person experiences over a shared meal — no awkward planning or group chats required."
-              )}
-            </p>
-            <h2 class="guide-heading">What is Chinwag?</h2>
-            <p class="guide-text">
-              ${DOMPurify.sanitize(
-                "Chinwag helps you find and join communal dining tables hosted at local cafes and restaurants. Whether you’re new in town or just want to shake up your social routine, Chinwag makes it easy to connect — no algorithms or matching required."
-              )}
-            </p>
+      <div>
+        <app-header></app-header>
+        <div class="guide-page">
+          <div class="guide-header"></div>
+          <div class="guide-content">
+            <div class="guide-text-block">
+              <h1 class="guide-title">Welcome!</h1>
+              <p class="guide-subtitle">
+                ${DOMPurify.sanitize(
+                  "We’re so glad you’re here. Chinwag connects people who crave meaningful, in-person experiences over a shared meal — no awkward planning or group chats required."
+                )}
+              </p>
+              <h2 class="guide-heading">What is Chinwag?</h2>
+              <p class="guide-text">
+                ${DOMPurify.sanitize(
+                  "Chinwag helps you find and join communal dining tables hosted at local cafes and restaurants. Whether you’re new in town or just want to shake up your social routine, Chinwag makes it easy to connect — no algorithms or matching required."
+                )}
+              </p>
+            </div>
+            <div class="guide-features">
+              <div class="guide-card">
+                <h4>🍽️ Meet new people</h4>
+                <p>No planning, no pressure — just show up.</p>
+              </div>
+              <div class="guide-card">
+                <h4>🗓️ Spontaneous plans</h4>
+                <p>Join an event tonight or this weekend.</p>
+              </div>
+              <div class="guide-card">
+                <h4>🧭 The unexpected</h4>
+                <p>Discover great venues and better convo.</p>
+              </div>
+            </div>
+            <div class="guide-cta">
+              <button
+                class="button primary large"
+                @click=${this.handleGetStarted.bind(this)}
+                aria-label="Get Started as a Guest"
+              >
+                Get Started
+              </button>
+            </div>
           </div>
-          <div class="guide-features">
-            <sl-card class="guide-card">
-              <h4>🍽️ Meet new people</h4>
-              <p>No planning, no pressure — just show up.</p>
-            </sl-card>
-            <sl-card class="guide-card">
-              <h4>🗓️ Spontaneous plans</h4>
-              <p>Join an event tonight or this weekend.</p>
-            </sl-card>
-            <sl-card class="guide-card">
-              <h4>🧭 The unexpected</h4>
-              <p>Discover great venues and better convo.</p>
-            </sl-card>
-          </div>
-          <div class="guide-cta">
-            <sl-button
-              variant="primary"
-              size="large"
-              @click=${this.handleGetStarted.bind(this)}
-              aria-label="Get Started as a Guest"
-            >
-              Get Started
-            </sl-button>
-          </div>
+          <div class="guide-footer"></div>
         </div>
-        <div
-          class="guide-footer"
-          style="background-image: url('/images/guide-footer.png')"
-        ></div>
+        <app-toast></app-toast>
       </div>
     `;
     render(template, App.rootEl);
   }
 }
 
-export default new GuestGuideView();
+export default GuestGuideView;

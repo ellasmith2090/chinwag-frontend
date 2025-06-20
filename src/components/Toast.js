@@ -1,39 +1,38 @@
 // Toast.js
 
-import { html, render } from "lit-html";
+import { LitElement, html } from "lit";
 
-const Toast = {
-  show(message, variant = "primary", duration = 3000) {
-    let container = document.getElementById("toast-container");
+class AppToast extends LitElement {
+  static properties = {
+    message: { type: String },
+    type: { type: String, attribute: "data-type" },
+    visible: { type: Boolean, reflect: true },
+  };
 
-    if (!container) {
-      container = document.createElement("div");
-      container.id = "toast-container";
-      document.body.appendChild(container);
-    }
+  constructor() {
+    super();
+    this.message = "";
+    this.type = "info";
+    this.visible = false;
+  }
 
-    const toast = document.createElement("div");
-    toast.className = "toast-wrapper";
-
-    const template = html`
-      <sl-alert
-        variant="${variant}"
-        duration="${duration}"
-        closable
-        class="toast"
-      >
-        <sl-icon slot="icon" name="info-circle"></sl-icon>
-        ${message}
-      </sl-alert>
-    `;
-
-    render(template, toast);
-    container.appendChild(toast);
-
+  show(message, type = "info") {
+    this.message = message;
+    this.type = type;
+    this.visible = true;
     setTimeout(() => {
-      toast.remove();
-    }, duration + 300);
-  },
-};
+      this.visible = false;
+    }, 3000);
+  }
 
-export default Toast;
+  render() {
+    return html`<span>${this.message}</span>`;
+  }
+}
+
+// Prevent multiple registrations
+if (!customElements.get("app-toast")) {
+  customElements.define("app-toast", AppToast);
+}
+
+export default AppToast;

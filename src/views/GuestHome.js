@@ -3,9 +3,7 @@
 import { html, render } from "lit-html";
 import App from "../App.js";
 import Auth from "../Auth.js";
-import Toast from "../components/Toast.js";
 import DOMPurify from "dompurify";
-import Header from "../components/Header.js";
 import apiFetch from "../apiFetch.js";
 
 class GuestHomeView {
@@ -15,7 +13,7 @@ class GuestHomeView {
   }
 
   init() {
-    document.title = "Guest Home";
+    document.title = "Guest Home - Chinwag";
     this.handleTabChange = this.handleTabChange.bind(this);
     this.render();
     this.fetchEvents();
@@ -29,15 +27,17 @@ class GuestHomeView {
       this.events = await response.json();
       this.render();
     } catch (err) {
-      Toast.show("Error fetching events");
+      document
+        .querySelector("app-toast")
+        ?.show("Error fetching events", "error");
       console.error("[GuestHome] fetchEvents error:", err);
-      this.events = [];
+      this.events = null;
       this.render();
     }
   }
 
-  handleTabChange(e) {
-    this.filter = e.target.panel;
+  handleTabChange(filter) {
+    this.filter = filter;
     this.events = null;
     this.render();
     this.fetchEvents();
@@ -53,101 +53,89 @@ class GuestHomeView {
         body: JSON.stringify({ eventId }),
       });
       if (!response.ok) throw new Error((await response.json()).message);
-      Toast.show("Event booked!");
+      document.querySelector("app-toast")?.show("Event booked!", "info");
       this.fetchEvents();
     } catch (err) {
-      Toast.show(err.message || "Booking failed");
+      document
+        .querySelector("app-toast")
+        ?.show(err.message || "Booking failed", "error");
       console.error("[GuestHome] bookEvent error:", err);
+      this.render();
     }
   }
 
   render() {
     const template = html`
       <div>
-        ${Header.render()}
-        <div class="page-content">
+        <app-header></app-header>
+        <div class="events-content">
           <h1 class="title">Have a chinwag...</h1>
 
           <div class="tab-bar">
-            <sl-tab-group @sl-tab-show=${this.handleTabChange}>
-              <sl-tab
-                slot="nav"
-                class="page-tab ${this.filter === "all" ? "active" : ""}"
-                panel="all"
-                ?active=${this.filter === "all"}
-              >
-                All
-              </sl-tab>
-              <sl-tab
-                slot="nav"
-                class="page-tab ${this.filter === "weekend" ? "active" : ""}"
-                panel="weekend"
-                ?active=${this.filter === "weekend"}
-              >
-                This Weekend
-              </sl-tab>
-              <sl-tab
-                slot="nav"
-                class="page-tab ${this.filter === "nextWeek" ? "active" : ""}"
-                panel="nextWeek"
-                ?active=${this.filter === "nextWeek"}
-              >
-                Next Week
-              </sl-tab>
-            </sl-tab-group>
+            <button
+              class="page-tab ${this.filter === "all" ? "active" : ""}"
+              @click=${() => this.handleTabChange("all")}
+            >
+              All
+            </button>
+            <button
+              class="page-tab ${this.filter === "weekend" ? "active" : ""}"
+              @click=${() => this.handleTabChange("weekend")}
+            >
+              This Weekend
+            </button>
+            <button
+              class="page-tab ${this.filter === "nextWeek" ? "active" : ""}"
+              @click=${() => this.handleTabChange("nextWeek")}
+            >
+              Next Week
+            </button>
           </div>
 
           ${this.events === null
-            ? html`<sl-spinner
-                style="margin: 2rem auto; display: block;"
-              ></sl-spinner>`
+            ? html`<div class="spinner">Loading events...</div>`
             : this.events.length === 0
             ? html`<p>No events found for this filter.</p>`
             : html`
-                <sl-carousel navigation pagination>
+                <div class="event-carousel">
                   ${this.events.map(
                     (event) => html`
-                      <sl-carousel-item>
-                        <div class="event-card">
-                          <img
-                            src="${DOMPurify.sanitize(event.image)}"
-                            alt="${DOMPurify.sanitize(event.title)}"
-                          />
-                          <div class="event-card-body">
-                            <h2>${DOMPurify.sanitize(event.title)}</h2>
-                            <p>${DOMPurify.sanitize(event.description)}</p>
-                            <p>
-                              Date: ${new Date(event.date).toLocaleString()}
-                            </p>
-                            <p>
-                              Location: ${DOMPurify.sanitize(event.location)}
-                            </p>
-                            <p>Seats Available: ${event.seatsAvailable}</p>
-                            <p>
-                              Host: ${DOMPurify.sanitize(event.host.firstName)}
-                              ${DOMPurify.sanitize(event.host.lastName)}
-                            </p>
-                          </div>
-                          <div class="button-group">
-                            <sl-button
-                              @click=${() => this.bookEvent(event._id)}
-                              variant="primary"
-                              ?disabled=${event.seatsAvailable === 0}
-                            >
-                              Book Event
-                            </sl-button>
-                          </div>
+                      <div class="event-card">
+                        <img
+                          src="${DOMPurify.sanitize(event.image)}"
+                          alt="${event.title}"
+                        />
+                        <div class="event-card-body">
+                          <h2>${DOMPurify.sanitize(event.title)}</h2>
+                          <p>${DOMPurify.sanitize(event.description)}</p>
+                          <p>Date: ${new Date(event.date).toLocaleString()}</p>
+                          <p>Location: ${DOMPurify.sanitize(event.location)}</p>
+                          <p>Seats Available: ${event.seatsAvailable}</p>
+                          <p>
+                            Host: ${DOMPurify.sanitize(event.host.firstName)}
+                            ${DOMPurify.sanitize(event.host.lastName)}
+                          </p>
                         </div>
-                      </sl-carousel-item>
+                        <div class="button-group">
+                          <button
+                            class="button primary"
+                            @click=${() => this.bookEvent(event._id)}
+                            ?disabled=${event.seatsAvailable === 0}
+                          >
+                            Book Event
+                          </button>
+                        </div>
+                      </div>
                     `
                   )}
-                </sl-carousel>
+                </div>
               `}
         </div>
+        <app-toast></app-toast>
       </div>
     `;
     render(template, App.rootEl);
   }
 }
 
-export default new GuestHomeView();
+export default GuestHomeView;

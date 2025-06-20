@@ -1,12 +1,9 @@
 // views/SignIn.js
 
-// views/SignIn.js
-
 import { html, render } from "lit-html";
 import App from "../App.js";
 import Auth from "../Auth.js";
 import { gotoRoute } from "../Router.js";
-import Toast from "../components/Toast.js";
 
 class SignInView {
   constructor() {
@@ -33,7 +30,9 @@ class SignInView {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Toast.show("Please enter a valid email address.", "warning");
+      document
+        .querySelector("app-toast")
+        ?.show("Please enter a valid email address.", "warning");
       this.loading = false;
       this.render();
       return;
@@ -41,7 +40,6 @@ class SignInView {
 
     try {
       await Auth.signIn({ email, password });
-      // Auth.signIn() handles redirection
     } catch (err) {
       this.loading = false;
 
@@ -50,12 +48,18 @@ class SignInView {
       }
 
       if (err.message.includes("User doesn't exist")) {
-        Toast.show("No account found. Redirecting to Sign Up...", "warning");
+        document
+          .querySelector("app-toast")
+          ?.show("No account found. Redirecting to Sign Up...", "warning");
         setTimeout(() => gotoRoute("/signup"), 2000);
       } else if (err.message.includes("Password or email is incorrect")) {
-        Toast.show("Incorrect email or password.", "warning");
+        document
+          .querySelector("app-toast")
+          ?.show("Incorrect email or password.", "warning");
       } else {
-        Toast.show(`Login failed: ${err.message}`, "danger");
+        document
+          .querySelector("app-toast")
+          ?.show(`Login failed: ${err.message}`, "error");
       }
 
       this.render();
@@ -68,54 +72,61 @@ class SignInView {
     }
 
     const template = html`
-      <div class="page-content page-centered" role="main">
-        <h1>Sign In</h1>
-        <div class="form-wrapper" aria-label="Sign In Form">
-          <form @submit=${this.submitHandler.bind(this)}>
-            <sl-input
-              name="email"
-              type="email"
-              label="Email"
-              required
-              autocomplete="email"
-              aria-required="true"
-            ></sl-input>
-            <sl-input
-              name="password"
-              type="password"
-              label="Password"
-              required
-              autocomplete="current-password"
-              aria-required="true"
-            ></sl-input>
-            <sl-button
-              type="submit"
-              variant="primary"
-              ?disabled=${this.loading}
-              ?loading=${this.loading}
-              aria-label="Submit Sign In"
-            >
-              Sign In
-            </sl-button>
-          </form>
-          <p>
-            Don't have an account?
-            <a
-              href="/signup"
-              @click=${(e) => {
-                e.preventDefault();
-                gotoRoute("/signup");
-              }}
-              aria-label="Go to Sign Up"
-            >
-              Sign Up
-            </a>
-          </p>
+      <div>
+        <app-header></app-header>
+        <div class="page-content page-centered" role="main">
+          <h1>Sign In</h1>
+          <div class="form-wrapper" aria-label="Sign In Form">
+            <form @submit=${this.submitHandler.bind(this)}>
+              <label>
+                Email
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  autocomplete="email"
+                  aria-required="true"
+                />
+              </label>
+              <label>
+                Password
+                <input
+                  name="password"
+                  type="password"
+                  required
+                  autocomplete="current-password"
+                  aria-required="true"
+                />
+              </label>
+              <button
+                type="submit"
+                class="button primary"
+                ?disabled=${this.loading}
+                aria-label="Submit Sign In"
+              >
+                ${this.loading ? "Signing In..." : "Sign In"}
+              </button>
+            </form>
+            <p>
+              Don't have an account?
+              <a
+                href="/signup"
+                @click=${(e) => {
+                  e.preventDefault();
+                  gotoRoute("/signup");
+                }}
+                aria-label="Go to Sign Up"
+              >
+                Sign Up
+              </a>
+            </p>
+          </div>
         </div>
+        <app-toast></app-toast>
       </div>
     `;
     render(template, App.rootEl);
   }
 }
 
-export default new SignInView();
+export default SignInView;

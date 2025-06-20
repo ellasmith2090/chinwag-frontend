@@ -3,136 +3,216 @@
 import { html, render } from "lit-html";
 import App from "../App.js";
 import Auth from "../Auth.js";
-import Toast from "../components/Toast.js";
 import DOMPurify from "dompurify";
-import { gotoRoute } from "../Router.js";
 
-class HostHomeView {
+class HostBookingsView {
   constructor() {
-    this.events = [];
+    this.bookings = [];
+    this.loading = true;
+    this.removingBookingId = null;
   }
 
   init() {
-    document.title = "Host Home";
-    this.fetchEvents();
-    this.submitHandler = this.submitHandler.bind(this);
-    this.imageHandler = this.imageHandler.bind(this);
+    document.title = "Host Bookings - Chinwag";
+    this.fetchBookings();
   }
 
-  async fetchEvents() {
+  async fetchBookings() {
     try {
-      const response = await fetch(
-        `${App.apiBase}/events?host=${Auth.currentUser.id}`
-      );
-      if (!response.ok) throw new Error("Failed to fetch events");
-      this.events = await response.json();
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${App.apiBase}/bookings/host`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to fetch bookings");
+      this.bookings = await response.json();
+      this.loading = false;
       this.render();
     } catch (err) {
-      Toast.show("Error fetching events");
+      this.loading = false;
+      document
+        .querySelector("app-toast")
+        ?.show("Error fetching bookings", "error");
       console.error(err);
+      this.render();
     }
   }
 
-  async submitHandler(e) {
-    e.preventDefault();
-    const form = e.target;
-    const title = DOMPurify.sanitize(
-      form.querySelector('[name="title"]').value
-    );
-    const description = DOMPurify.sanitize(
-      form.querySelector('[name="description"]').value
-    );
-    const date = DOMPurify.sanitize(form.querySelector('[name="date"]').value);
-    const location = DOMPurify.sanitize(
-      form.querySelector('[name="location"]').value
-    );
-    const image = form.querySelector('[name="image"]').files[0];
-
+  async updateNote(bookingId, notes) {
     try {
       const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("date", date);
-      formData.append("location", location);
-      if (image) formData.append("image", image);
-
-      const response = await fetch(`${App.apiBase}/events`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-      if (!response.ok) throw new Error(await response.json().message);
-      Toast.show("Event created!");
-      this.fetchEvents();
+      const response = await fetch(
+        `${App.apiBase}/bookings/${bookingId}/notes`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ notes: DOMPurify.sanitize(notes) }),
+        }
+      );
+      if (!response.ok) throw new Error("Failed to update notes");
+      document.querySelector("app-toast")?.show("Notes updated", "info");
+      this.fetchBookings();
     } catch (err) {
-      Toast.show(err.message || "Event creation failed");
+      document
+        .querySelector("app-toast")
+        ?.show(err.message || "Failed to update notes", "error");
       console.error(err);
+      this.render();
     }
   }
 
-  async deleteEvent(eventId) {
+  async removeBooking(bookingId) {
+    this.removingBookingId = bookingId;
+    this.render();
+  }
+
+  async confirmRemove(bookingId) {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${App.apiBase}/events/${eventId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!response.ok) throw new Error(await response.json().message);
-      Toast.show("Event deleted");
-      this.fetchEvents();
+      const response = await fetch(
+        `${App.apiBase}/bookings/${bookingId}/cancel`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (!response.ok) throw new Error("Failed to remove booking");
+      document.querySelector("app-toast")?.show("Booking removed", "info");
+      this.removingBookingId = null;
+      this.fetchBookings();
     } catch (err) {
-      Toast.show(err.message || "Deletion failed");
+      document
+        .querySelector("app-toast")
+        ?.show(err.message || "Failed to remove booking", "error");
       console.error(err);
+      this.removingBookingId = null;
+      this.render();
     }
+  }
+
+  groupBookingsByEvent() {
+    const events = {};
+    this.bookings.forEach((booking) => {
+      const eventId = booking.event._id;
+      if (!events[eventId]) {
+        events[eventId] = {
+          event: booking.event,
+          bookings: [],
+        };
+      }
+      events[eventId].bookings.push(booking);
+    });
+    return Object.values(events);
   }
 
   render() {
+    const eventGroups = this.groupBookingsByEvent();
     const template = html`
-      <div class="page-content">
-        <h1>Your Events</h1>
-        <form @submit=${this.submitHandler}>
-          <sl-input name="title" label="Event Title" required></sl-input>
-          <sl-textarea
-            name="description"
-            label="Description"
-            required
-          ></sl-textarea>
-          <sl-input
-            name="date"
-            type="datetime-local"
-            label="Date and Time"
-            required
-          ></sl-input>
-          <sl-input name="location" label="Location" required></sl-input>
-          <input type="file" name="image" accept="image/*" />
-          <sl-button type="submit" variant="primary">Create Event</sl-button>
-        </form>
-        <h2>Existing Events</h2>
-        ${this.events.map(
-          (event) => html`
-            <div class="event-card">
-              <img
-                src="${DOMPurify.sanitize(event.image)}"
-                alt="${event.title}"
-                width="300"
-              />
-              <h3>${DOMPurify.sanitize(event.title)}</h3>
-              <p>${DOMPurify.sanitize(event.description)}</p>
-              <p>Date: ${new Date(event.date).toLocaleString()}</p>
-              <p>Location: ${DOMPurify.sanitize(event.location)}</p>
-              <sl-button
-                @click=${() => this.deleteEvent(event._id)}
-                variant="danger"
-                >Delete</sl-button
-              >
-            </div>
-          `
-        )}
+      <div>
+        <app-header></app-header>
+        <div class="page-content">
+          <h1>Your Event Bookings</h1>
+          ${this.loading
+            ? html`<div class="spinner">Loading...</div>`
+            : eventGroups.length === 0
+            ? html`<p>No bookings found for your events.</p>`
+            : eventGroups.map(
+                ({ event, bookings }) => html`
+                  <div class="event-section">
+                    <h2>${DOMPurify.sanitize(event.title)}</h2>
+                    <div class="booking-grid">
+                      ${bookings.map(
+                        (booking) => html`
+                          <div class="booking-card">
+                            <div class="card-header">
+                              <img
+                                src="${DOMPurify.sanitize(
+                                  booking.guest.avatar.startsWith("/uploads")
+                                    ? `${App.apiBase}${booking.guest.avatar}`
+                                    : `/images/defaultavatar.png`
+                                )}"
+                                alt="Avatar for ${DOMPurify.sanitize(
+                                  booking.guest.firstName
+                                )}"
+                                class="avatar"
+                                @error=${(e) =>
+                                  (e.target.src = `/images/defaultavatar.png`)}
+                                loading="lazy"
+                              />
+                              <span
+                                >${DOMPurify.sanitize(
+                                  `${booking.guest.firstName} ${booking.guest.lastName}`
+                                )}</span
+                              >
+                            </div>
+                            <div>
+                              <strong>Email:</strong>
+                              ${DOMPurify.sanitize(booking.guest.email)}
+                            </div>
+                            <div>
+                              <strong>Notes:</strong>
+                              <input
+                                value="${DOMPurify.sanitize(
+                                  booking.hostNotes || ""
+                                )}"
+                                @change=${(e) =>
+                                  this.updateNote(booking._id, e.target.value)}
+                              />
+                            </div>
+                            <div class="card-footer">
+                              <button
+                                class="button danger"
+                                @click=${() => this.removeBooking(booking._id)}
+                                aria-label="Remove ${DOMPurify.sanitize(
+                                  booking.guest.firstName
+                                )}"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        `
+                      )}
+                    </div>
+                  </div>
+                `
+              )}
+          ${this.removingBookingId
+            ? html`
+                <div class="dialog-overlay">
+                  <div class="dialog">
+                    <h2>Confirm Removal</h2>
+                    <p>Are you sure you want to remove this guest?</p>
+                    <div class="dialog-footer">
+                      <button
+                        class="button primary"
+                        @click=${() =>
+                          this.confirmRemove(this.removingBookingId)}
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        class="button"
+                        @click=${() => {
+                          this.removingBookingId = null;
+                          this.render();
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `
+            : ""}
+        </div>
+        <app-toast></app-toast>
       </div>
     `;
     render(template, App.rootEl);
   }
 }
 
-export default new HostHomeView();
+export default HostBookingsView;

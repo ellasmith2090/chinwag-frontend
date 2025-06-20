@@ -4,9 +4,8 @@ import { html, render } from "lit-html";
 import App from "../App.js";
 import Auth from "../Auth.js";
 import { gotoRoute } from "../Router.js";
-import Toast from "../components/Toast.js";
 import DOMPurify from "dompurify";
-import apiFetch from "../apiFetch.js"; // ✅ import
+import apiFetch from "../apiFetch.js";
 
 class SignUpView {
   constructor() {
@@ -47,7 +46,9 @@ class SignUpView {
       this.passwordMismatch = true;
       this.loading = false;
       this.render();
-      Toast.show("Passwords do not match");
+      document
+        .querySelector("app-toast")
+        ?.show("Passwords do not match", "error");
       return;
     }
 
@@ -69,12 +70,17 @@ class SignUpView {
       const { accessToken, user } = await response.json();
       localStorage.setItem("token", accessToken);
       Auth.currentUser = user;
-      Toast.show("Account created!");
+      document.querySelector("app-toast")?.show("Account created!", "info");
 
       gotoRoute(user.accessLevel === 1 ? "/guest-guide" : "/host-guide");
     } catch (err) {
       this.loading = false;
-      Toast.show(`Sign-up failed: ${err.message || "Please try again."}`);
+      document
+        .querySelector("app-toast")
+        ?.show(
+          `Sign-up failed: ${err.message || "Please try again."}`,
+          "error"
+        );
       console.error("[SignUp] Submit failed:", err);
       this.render();
     }
@@ -82,83 +88,94 @@ class SignUpView {
 
   render() {
     const template = html`
-      <div class="page-content page-centered" role="main">
-        <h1>Create Your Account</h1>
-        <div class="form-wrapper" aria-label="Sign Up Form">
-          <form @submit=${this.submitHandler.bind(this)}>
-            <sl-input
-              name="firstName"
-              label="First Name"
-              required
-              autocomplete="given-name"
-            ></sl-input>
-            <sl-input
-              name="lastName"
-              label="Last Name"
-              required
-              autocomplete="family-name"
-            ></sl-input>
-            <sl-input
-              name="email"
-              type="email"
-              label="Email"
-              required
-              autocomplete="email"
-            ></sl-input>
-            <sl-input
-              name="password"
-              type="password"
-              label="Password"
-              required
-              autocomplete="new-password"
-              help-text=${this.passwordMismatch ? "Passwords do not match" : ""}
-              ?invalid=${this.passwordMismatch}
-            ></sl-input>
-            <sl-input
-              name="confirmPassword"
-              type="password"
-              label="Confirm Password"
-              required
-              autocomplete="new-password"
-              help-text=${this.passwordMismatch ? "Passwords do not match" : ""}
-              ?invalid=${this.passwordMismatch}
-            ></sl-input>
-            <sl-radio-group
-              name="accessLevel"
-              label="Register as"
-              required
-              value="1"
-            >
-              <sl-radio value="1">Guest</sl-radio>
-              <sl-radio value="2">Host</sl-radio>
-            </sl-radio-group>
-            <sl-button
-              type="submit"
-              variant="primary"
-              ?disabled=${this.loading}
-              ?loading=${this.loading}
-            >
-              Sign Up
-            </sl-button>
-          </form>
-          <p>
-            Already have an account?
-            <a
-              href="/signin"
-              @click=${(e) => {
-                e.preventDefault();
-                gotoRoute("/signin");
-              }}
-              aria-label="Go to Sign In"
-            >
-              Sign In
-            </a>
-          </p>
+      <div>
+        <app-header></app-header>
+        <div class="page-content page-centered" role="main">
+          <h1>Create Your Account</h1>
+          <div class="form-wrapper" aria-label="Sign Up Form">
+            <form @submit=${this.submitHandler.bind(this)}>
+              <label>
+                First Name
+                <input name="firstName" required autocomplete="given-name" />
+              </label>
+              <label>
+                Last Name
+                <input name="lastName" required autocomplete="family-name" />
+              </label>
+              <label>
+                Email
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  autocomplete="email"
+                />
+              </label>
+              <label>
+                Password
+                <input
+                  name="password"
+                  type="password"
+                  required
+                  autocomplete="new-password"
+                  class=${this.passwordMismatch ? "invalid" : ""}
+                />
+                ${this.passwordMismatch
+                  ? html`<span>Passwords do not match</span>`
+                  : ""}
+              </label>
+              <label>
+                Confirm Password
+                <input
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  autocomplete="new-password"
+                  class=${this.passwordMismatch ? "invalid" : ""}
+                />
+                ${this.passwordMismatch
+                  ? html`<span>Passwords do not match</span>`
+                  : ""}
+              </label>
+              <fieldset>
+                <legend>Register as</legend>
+                <label>
+                  <input type="radio" name="accessLevel" value="1" checked />
+                  Guest
+                </label>
+                <label>
+                  <input type="radio" name="accessLevel" value="2" />
+                  Host
+                </label>
+              </fieldset>
+              <button
+                type="submit"
+                class="button primary"
+                ?disabled=${this.loading}
+              >
+                ${this.loading ? "Signing Up..." : "Sign Up"}
+              </button>
+            </form>
+            <p>
+              Already have an account?
+              <a
+                href="/signin"
+                @click=${(e) => {
+                  e.preventDefault();
+                  gotoRoute("/signin");
+                }}
+                aria-label="Go to Sign In"
+              >
+                Sign In
+              </a>
+            </p>
+          </div>
         </div>
+        <app-toast></app-toast>
       </div>
     `;
     render(template, App.rootEl);
   }
 }
 
-export default new SignUpView();
+export default SignUpView;

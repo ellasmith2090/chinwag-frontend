@@ -3,9 +3,7 @@
 import { html, render } from "lit-html";
 import App from "../App.js";
 import Auth from "../Auth.js";
-import Toast from "../components/Toast.js";
 import DOMPurify from "dompurify";
-import Header from "../components/Header.js";
 
 class GuestBookingsView {
   constructor() {
@@ -32,14 +30,16 @@ class GuestBookingsView {
       this.render();
     } catch (err) {
       this.loading = false;
-      Toast.show("Error fetching bookings");
+      document
+        .querySelector("app-toast")
+        ?.show("Error fetching bookings", "error");
       console.error(err);
       this.render();
     }
   }
 
-  handleTabClick(e) {
-    this.activeFilter = e.target.panel;
+  handleTabClick(filter) {
+    this.activeFilter = filter;
     this.render();
   }
 
@@ -59,11 +59,13 @@ class GuestBookingsView {
         }
       );
       if (!response.ok) throw new Error("Failed to cancel booking");
-      Toast.show("Booking cancelled");
+      document.querySelector("app-toast")?.show("Booking cancelled", "info");
       this.cancellingBookingId = null;
       this.fetchBookings();
     } catch (err) {
-      Toast.show(err.message || "Failed to cancel booking");
+      document
+        .querySelector("app-toast")
+        ?.show(err.message || "Failed to cancel booking", "error");
       console.error(err);
       this.cancellingBookingId = null;
       this.render();
@@ -83,42 +85,37 @@ class GuestBookingsView {
     const filteredBookings = this.getFilteredBookings();
     const template = html`
       <div>
-        ${Header.render()}
+        <app-header></app-header>
         <div class="page-content">
           <h1>Your Bookings</h1>
 
           <div class="tab-bar">
-            <sl-tab-group @sl-tab-show=${this.handleTabClick.bind(this)}>
-              <sl-tab
-                class="page-tab"
-                slot="nav"
-                panel="Upcoming"
-                ?active=${this.activeFilter === "Upcoming"}
-              >
-                Upcoming
-              </sl-tab>
-              <sl-tab
-                class="page-tab"
-                slot="nav"
-                panel="Past"
-                ?active=${this.activeFilter === "Past"}
-              >
-                Past
-              </sl-tab>
-            </sl-tab-group>
+            <button
+              class="page-tab ${this.activeFilter === "Upcoming"
+                ? "active"
+                : ""}"
+              @click=${() => this.handleTabClick("Upcoming")}
+            >
+              Upcoming
+            </button>
+            <button
+              class="page-tab ${this.activeFilter === "Past" ? "active" : ""}"
+              @click=${() => this.handleTabClick("Past")}
+            >
+              Past
+            </button>
           </div>
 
           ${this.loading
-            ? html`<sl-spinner></sl-spinner>`
+            ? html`<div class="spinner">Loading...</div>`
             : filteredBookings.length === 0
             ? html`<p>No ${this.activeFilter.toLowerCase()} bookings found.</p>`
             : html`
                 <div class="booking-grid">
                   ${filteredBookings.map(
                     (booking) => html`
-                      <sl-card class="booking-card">
+                      <div class="booking-card">
                         <img
-                          slot="image"
                           src="${DOMPurify.sanitize(
                             booking.event.image.startsWith("/uploads")
                               ? `${App.apiBase}${booking.event.image}`
@@ -152,62 +149,67 @@ class GuestBookingsView {
                           <strong>Host Email:</strong>
                           ${DOMPurify.sanitize(booking.event.host.email)}
                         </p>
-                        <div slot="footer">
-                          <sl-button
-                            variant="primary"
+                        <div class="card-footer">
+                          <button
+                            class="button primary"
                             @click=${() =>
                               window.open(`mailto:${booking.event.host.email}`)}
                             aria-label="Contact Host"
                           >
                             Contact Host
-                          </sl-button>
+                          </button>
                           ${booking.status === "confirmed"
                             ? html`
-                                <sl-button
-                                  variant="danger"
+                                <button
+                                  class="button danger"
                                   @click=${() =>
                                     this.cancelBooking(booking._id)}
                                   aria-label="Cancel Booking"
                                 >
                                   Cancel Booking
-                                </sl-button>
+                                </button>
                               `
                             : ""}
                         </div>
-                      </sl-card>
+                      </div>
                     `
                   )}
                 </div>
               `}
           ${this.cancellingBookingId
             ? html`
-                <sl-dialog label="Confirm Cancellation" open>
-                  <p>Are you sure you want to cancel this booking?</p>
-                  <sl-button
-                    slot="footer"
-                    variant="primary"
-                    @click=${() => this.confirmCancel(this.cancellingBookingId)}
-                  >
-                    Confirm
-                  </sl-button>
-                  <sl-button
-                    slot="footer"
-                    variant="default"
-                    @click=${() => {
-                      this.cancellingBookingId = null;
-                      this.render();
-                    }}
-                  >
-                    Cancel
-                  </sl-button>
-                </sl-dialog>
+                <div class="dialog-overlay">
+                  <div class="dialog">
+                    <h2>Confirm Cancellation</h2>
+                    <p>Are you sure you want to cancel this booking?</p>
+                    <div class="dialog-footer">
+                      <button
+                        class="button primary"
+                        @click=${() =>
+                          this.confirmCancel(this.cancellingBookingId)}
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        class="button"
+                        @click=${() => {
+                          this.cancellingBookingId = null;
+                          this.render();
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
               `
             : ""}
         </div>
+        <app-toast></app-toast>
       </div>
     `;
     render(template, App.rootEl);
   }
 }
 
-export default new GuestBookingsView();
+export default GuestBookingsView;

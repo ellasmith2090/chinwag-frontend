@@ -3,9 +3,7 @@
 import { html, render } from "lit-html";
 import App from "../App.js";
 import Auth from "../Auth.js";
-import Toast from "../components/Toast.js";
 import DOMPurify from "dompurify";
-import Header from "../components/Header.js";
 
 class HostBookingsView {
   constructor() {
@@ -31,7 +29,9 @@ class HostBookingsView {
       this.render();
     } catch (err) {
       this.loading = false;
-      Toast.show("Error fetching bookings");
+      document
+        .querySelector("app-toast")
+        ?.show("Error fetching bookings", "error");
       console.error(err);
       this.render();
     }
@@ -52,11 +52,14 @@ class HostBookingsView {
         }
       );
       if (!response.ok) throw new Error("Failed to update notes");
-      Toast.show("Notes updated");
+      document.querySelector("app-toast")?.show("Notes updated", "info");
       this.fetchBookings();
     } catch (err) {
-      Toast.show(err.message || "Failed to update notes");
+      document
+        .querySelector("app-toast")
+        ?.show(err.message || "Failed to update notes", "error");
       console.error(err);
+      this.render();
     }
   }
 
@@ -76,11 +79,13 @@ class HostBookingsView {
         }
       );
       if (!response.ok) throw new Error("Failed to remove booking");
-      Toast.show("Booking removed");
+      document.querySelector("app-toast")?.show("Booking removed", "info");
       this.removingBookingId = null;
       this.fetchBookings();
     } catch (err) {
-      Toast.show(err.message || "Failed to remove booking");
+      document
+        .querySelector("app-toast")
+        ?.show(err.message || "Failed to remove booking", "error");
       console.error(err);
       this.removingBookingId = null;
       this.render();
@@ -106,11 +111,11 @@ class HostBookingsView {
     const eventGroups = this.groupBookingsByEvent();
     const template = html`
       <div>
-        ${Header.render()}
+        <app-header></app-header>
         <div class="page-content">
           <h1>Your Event Bookings</h1>
           ${this.loading
-            ? html`<sl-spinner></sl-spinner>`
+            ? html`<div class="spinner">Loading...</div>`
             : eventGroups.length === 0
             ? html`<p>No bookings found for your events.</p>`
             : eventGroups.map(
@@ -120,8 +125,8 @@ class HostBookingsView {
                     <div class="booking-grid">
                       ${bookings.map(
                         (booking) => html`
-                          <sl-card class="booking-card">
-                            <div slot="header">
+                          <div class="booking-card">
+                            <div class="card-header">
                               <img
                                 src="${DOMPurify.sanitize(
                                   booking.guest.avatar.startsWith("/uploads")
@@ -148,26 +153,26 @@ class HostBookingsView {
                             </div>
                             <div>
                               <strong>Notes:</strong>
-                              <sl-input
+                              <input
                                 value="${DOMPurify.sanitize(
                                   booking.hostNotes || ""
                                 )}"
-                                @sl-change=${(e) =>
+                                @change=${(e) =>
                                   this.updateNote(booking._id, e.target.value)}
-                              ></sl-input>
+                              />
                             </div>
-                            <div slot="footer">
-                              <sl-button
-                                variant="danger"
+                            <div class="card-footer">
+                              <button
+                                class="button danger"
                                 @click=${() => this.removeBooking(booking._id)}
                                 aria-label="Remove ${DOMPurify.sanitize(
                                   booking.guest.firstName
                                 )}"
                               >
                                 Remove
-                              </sl-button>
+                              </button>
                             </div>
-                          </sl-card>
+                          </div>
                         `
                       )}
                     </div>
@@ -176,33 +181,38 @@ class HostBookingsView {
               )}
           ${this.removingBookingId
             ? html`
-                <sl-dialog label="Confirm Removal" open>
-                  <p>Are you sure you want to remove this guest?</p>
-                  <sl-button
-                    slot="footer"
-                    variant="primary"
-                    @click=${() => this.confirmRemove(this.removingBookingId)}
-                  >
-                    Confirm
-                  </sl-button>
-                  <sl-button
-                    slot="footer"
-                    variant="default"
-                    @click=${() => {
-                      this.removingBookingId = null;
-                      this.render();
-                    }}
-                  >
-                    Cancel
-                  </sl-button>
-                </sl-dialog>
+                <div class="dialog-overlay">
+                  <div class="dialog">
+                    <h2>Confirm Removal</h2>
+                    <p>Are you sure you want to remove this guest?</p>
+                    <div class="dialog-footer">
+                      <button
+                        class="button primary"
+                        @click=${() =>
+                          this.confirmRemove(this.removingBookingId)}
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        class="button"
+                        @click=${() => {
+                          this.removingBookingId = null;
+                          this.render();
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
               `
             : ""}
         </div>
+        <app-toast></app-toast>
       </div>
     `;
     render(template, App.rootEl);
   }
 }
 
-export default new HostBookingsView();
+export default HostBookingsView;

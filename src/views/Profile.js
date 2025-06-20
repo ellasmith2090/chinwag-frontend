@@ -5,7 +5,6 @@ import App from "../App.js";
 import Auth from "../Auth.js";
 import apiFetch from "../apiFetch.js";
 import DOMPurify from "dompurify";
-import Header from "../components/Header.js";
 import defaultAvatar from "../images/defaultavatar.png";
 
 class ProfileView {
@@ -65,7 +64,7 @@ class ProfileView {
     if (!validTypes.includes(file.type)) {
       document
         .querySelector("app-toast")
-        .show("Please select a PNG or JPEG image", "error");
+        ?.show("Please select a PNG or JPEG image", "error");
       this.fileLoading = false;
       this.render();
       return;
@@ -73,7 +72,7 @@ class ProfileView {
     if (file.size > maxSize) {
       document
         .querySelector("app-toast")
-        .show("Image must be smaller than 2MB", "error");
+        ?.show("Image must be smaller than 2MB", "error");
       this.fileLoading = false;
       this.render();
       return;
@@ -146,13 +145,13 @@ class ProfileView {
       this.selectedFile = null;
       this.passwordMismatch = false;
       this.saving = false;
-      document.querySelector("app-toast").show("Profile updated");
+      document.querySelector("app-toast")?.show("Profile updated", "info");
       this.render();
     } catch (err) {
       this.saving = false;
       document
         .querySelector("app-toast")
-        .show(err.message || "Failed to update profile", "error");
+        ?.show(err.message || "Failed to update profile", "error");
       console.error("[ProfileView] Update error:", err);
       this.render();
     }
@@ -168,7 +167,7 @@ class ProfileView {
     }
     const template = html`
       <div>
-        ${Header.render()}
+        <app-header></app-header>
         <div class="page-content">
           ${this.loading
             ? html`<div>Loading...</div>`
@@ -253,7 +252,11 @@ class ProfileView {
                         ? html`<span>Passwords do not match</span>`
                         : ""}
                     </label>
-                    <button type="submit" ?disabled=${this.saving}>
+                    <button
+                      type="submit"
+                      class="button primary"
+                      ?disabled=${this.saving}
+                    >
                       ${this.saving ? "Saving..." : "Save Changes"}
                     </button>
                   </form>

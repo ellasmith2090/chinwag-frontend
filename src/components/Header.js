@@ -1,20 +1,28 @@
 // components/header.js
 
-import { html } from "lit-html";
+import { LitElement, html } from "lit";
 import Auth from "../Auth.js";
 import { gotoRoute } from "../Router.js";
 
-const Header = {
-  currentTab: "home",
-  render() {
-    const isHost = Auth.currentUser?.accessLevel === 2;
+class AppHeader extends LitElement {
+  static properties = {
+    currentTab: { type: String },
+  };
 
-    // Set current tab based on current URL
+  constructor() {
+    super();
+    this.currentTab = "home";
+  }
+
+  updated() {
     const path = window.location.pathname;
     if (path.includes("bookings")) this.currentTab = "bookings";
     else if (path.includes("profile")) this.currentTab = "profile";
     else this.currentTab = "home";
+  }
 
+  render() {
+    const isHost = Auth.currentUser?.accessLevel === 2;
     return html`
       <header class="site-header">
         <div class="image-overlay"></div>
@@ -27,7 +35,6 @@ const Header = {
           >
             Chinwag
           </div>
-
           <nav class="nav-tabs">
             <button
               class="nav-tab ${this.currentTab === "home" ? "active" : ""}"
@@ -55,7 +62,8 @@ const Header = {
         </div>
       </header>
     `;
-  },
-};
+  }
+}
 
-export default Header;
+customElements.define("app-header", AppHeader);
+export default AppHeader;
