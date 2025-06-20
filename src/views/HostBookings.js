@@ -126,14 +126,14 @@ class HostBookingsView {
                                 src="${DOMPurify.sanitize(
                                   booking.guest.avatar.startsWith("/uploads")
                                     ? `${App.apiBase}${booking.guest.avatar}`
-                                    : `/images/default-avatar.png`
+                                    : `/images/defaultavatar.png`
                                 )}"
                                 alt="Avatar for ${DOMPurify.sanitize(
                                   booking.guest.firstName
                                 )}"
                                 class="avatar"
                                 @error=${(e) =>
-                                  (e.target.src = `/images/default-avatar.png`)}
+                                  (e.target.src = `/images/defaultavatar.png`)}
                                 loading="lazy"
                               />
                               <span

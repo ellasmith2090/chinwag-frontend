@@ -30,14 +30,12 @@ const Router = {
   async route() {
     const path = window.location.pathname;
     console.log("[Router] Routing to:", path);
-    const view = this.routes[path] || SignInView;
+    const View = this.routes[path] || SignInView;
     const isAuthenticated = await Auth.check();
-
     if (!isAuthenticated && !["/signin", "/signup"].includes(path)) {
       gotoRoute("/signin");
       return;
     }
-
     if (isAuthenticated) {
       const { accessLevel } = Auth.currentUser;
       if (path === "/guest-guide" && accessLevel !== 1) {
@@ -65,7 +63,7 @@ const Router = {
         return;
       }
     }
-
+    const view = new View();
     view.init();
     view.render();
   },

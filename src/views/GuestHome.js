@@ -66,13 +66,13 @@ class GuestHomeView {
       <div>
         ${Header.render()}
         <div class="page-content">
-          <h1 class="guest-home-title">Have a chinwag...</h1>
+          <h1 class="title">Have a chinwag...</h1>
 
           <div class="tab-bar">
             <sl-tab-group @sl-tab-show=${this.handleTabChange}>
               <sl-tab
                 slot="nav"
-                class="tab ${this.filter === "all" ? "active" : ""}"
+                class="page-tab ${this.filter === "all" ? "active" : ""}"
                 panel="all"
                 ?active=${this.filter === "all"}
               >
@@ -80,7 +80,7 @@ class GuestHomeView {
               </sl-tab>
               <sl-tab
                 slot="nav"
-                class="tab ${this.filter === "weekend" ? "active" : ""}"
+                class="page-tab ${this.filter === "weekend" ? "active" : ""}"
                 panel="weekend"
                 ?active=${this.filter === "weekend"}
               >
@@ -88,7 +88,7 @@ class GuestHomeView {
               </sl-tab>
               <sl-tab
                 slot="nav"
-                class="tab ${this.filter === "nextWeek" ? "active" : ""}"
+                class="page-tab ${this.filter === "nextWeek" ? "active" : ""}"
                 panel="nextWeek"
                 ?active=${this.filter === "nextWeek"}
               >

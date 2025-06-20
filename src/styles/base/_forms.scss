@@ -27,16 +27,6 @@ sl-input.error::part(base) {
   box-shadow: 0 0 0 2px vars.$error-light;
 }
 
-sl-input::part(label) {
-  display: block;
-  width: 100%;
-  text-align: left;
-  font-family: vars.$font-heading;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: vars.$text-color;
-}
-
 .form-wrapper {
   width: 100%;
   max-width: 400px;
@@ -47,6 +37,16 @@ sl-input::part(label) {
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  sl-input::part(label) {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-family: vars.$font-heading;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: vars.$text-color;
+  }
 
   form {
     width: 100%;

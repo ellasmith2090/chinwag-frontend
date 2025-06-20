@@ -29905,8 +29905,11 @@ const App = {
     rootEl: null,
     async init () {
         this.rootEl = document.getElementById("root");
-        if (!this.rootEl) throw new Error("Root element #root not found");
-        console.log("[App] Initialising...");
+        if (!this.rootEl) {
+            console.error("[App] Root element #root not found");
+            throw new Error("Root element #root not found");
+        }
+        console.log("[App] Initialising with apiBase:", this.apiBase);
         await (0, _routerJsDefault.default).init();
     }
 };
@@ -29957,7 +29960,7 @@ const Router = {
     async route () {
         const path = window.location.pathname;
         console.log("[Router] Routing to:", path);
-        const view = this.routes[path] || (0, _signInJsDefault.default);
+        const View = this.routes[path] || (0, _signInJsDefault.default);
         const isAuthenticated = await (0, _authJsDefault.default).check();
         if (!isAuthenticated && ![
             "/signin",
@@ -29993,6 +29996,7 @@ const Router = {
                 return;
             }
         }
+        const view = new View();
         view.init();
         view.render();
     }
@@ -32161,38 +32165,35 @@ parcelHelpers.defineInteropFlag(exports);
 var _authJs = require("./Auth.js");
 var _authJsDefault = parcelHelpers.interopDefault(_authJs);
 var _routerJs = require("./Router.js");
-var _toastJs = require("./components/Toast.js");
-var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 async function apiFetch(url, options = {}) {
     const token = localStorage.getItem("token");
     if (token && (0, _authJs.isTokenExpired)(token)) {
-        (0, _toastJsDefault.default).show("Session expired. Please sign in again.");
+        document.querySelector("app-toast")?.show("Session expired. Please sign in again.", "error");
         (0, _authJsDefault.default).signOut();
         (0, _routerJs.gotoRoute)("/signin");
         throw new Error("JWT expired");
     }
-    if (token) options.headers = {
-        ...options.headers || {},
-        Authorization: `Bearer ${token}`
-    };
+    options.headers = options.headers || {};
+    if (token) options.headers.Authorization = `Bearer ${token}`;
+    if (!(options.body instanceof FormData)) options.headers["Content-Type"] = "application/json";
     try {
         const res = await fetch(url, options);
         if (res.status === 401 || res.status === 403) {
-            (0, _toastJsDefault.default).show("Unauthorized. Please sign in again.");
+            document.querySelector("app-toast")?.show("Unauthorized. Please sign in again.", "error");
             (0, _authJsDefault.default).signOut();
             (0, _routerJs.gotoRoute)("/signin");
             throw new Error("Unauthorized or expired token");
         }
         return res;
     } catch (err) {
-        (0, _toastJsDefault.default).show("Network error \u2013 please check your connection.");
+        document.querySelector("app-toast")?.show("Network error \u2013 please check your connection.", "error");
         console.error("[apiFetch] Error:", err);
         throw err;
     }
 }
 exports.default = apiFetch;
 
-},{"./Auth.js":"aJFb5","./Router.js":"b5tFI","./components/Toast.js":"eSyC4","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fdhWh":[function(require,module,exports,__globalThis) {
+},{"./Auth.js":"aJFb5","./Router.js":"b5tFI","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"fdhWh":[function(require,module,exports,__globalThis) {
 // views/GuestGuide.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -32396,48 +32397,83 @@ var _appJs = require("../App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 var _authJs = require("../Auth.js");
 var _authJsDefault = parcelHelpers.interopDefault(_authJs);
-var _toastJs = require("../components/Toast.js");
-var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
+var _apiFetchJs = require("../apiFetch.js");
+var _apiFetchJsDefault = parcelHelpers.interopDefault(_apiFetchJs);
 var _dompurify = require("dompurify");
 var _dompurifyDefault = parcelHelpers.interopDefault(_dompurify);
 var _headerJs = require("../components/Header.js");
 var _headerJsDefault = parcelHelpers.interopDefault(_headerJs);
-var _apiFetchJs = require("../apiFetch.js");
-var _apiFetchJsDefault = parcelHelpers.interopDefault(_apiFetchJs);
+var _defaultavatarPng = require("../images/defaultavatar.png");
+var _defaultavatarPngDefault = parcelHelpers.interopDefault(_defaultavatarPng);
 class ProfileView {
     constructor(){
         this.user = null;
         this.loading = true;
         this.saving = false;
         this.passwordMismatch = false;
-        this.showPasswordDialog = false;
-        this.avatarPreview = null;
+        this.avatarPreview = (0, _defaultavatarPngDefault.default);
+        this.selectedFile = null;
+        this.fileLoading = false;
     }
     init() {
         document.title = "Profile - Chinwag";
         this.fetchUser();
     }
+    disconnectedCallback() {
+        if (this.avatarPreview.startsWith("blob:")) URL.revokeObjectURL(this.avatarPreview);
+    }
+    getSafeAvatarUrl(avatar) {
+        if (typeof avatar === "string" && avatar.startsWith("/uploads")) return `${(0, _appJsDefault.default).apiBase.replace("/api", "")}${avatar}`;
+        return 0, _defaultavatarPngDefault.default;
+    }
     async fetchUser() {
         try {
+            console.log("[ProfileView] Fetching user for ID:", (0, _authJsDefault.default).currentUser.id);
             const response = await (0, _apiFetchJsDefault.default)(`${(0, _appJsDefault.default).apiBase}/users/${(0, _authJsDefault.default).currentUser.id}`);
             if (!response.ok) throw new Error("Failed to fetch profile");
             this.user = await response.json();
-            this.avatarPreview = this.user.avatar.startsWith("/uploads") ? `${(0, _appJsDefault.default).apiBase}${this.user.avatar}` : "/images/default-avatar.png";
+            this.avatarPreview = this.getSafeAvatarUrl(this.user.avatar);
             this.loading = false;
             this.render();
         } catch (err) {
             this.loading = false;
-            (0, _toastJsDefault.default).show("Error fetching profile");
-            console.error(err);
+            console.error("[ProfileView] Fetch error:", err);
             this.render();
         }
     }
     handleAvatarChange(e) {
         const file = e.target.files[0];
-        if (file) {
-            this.avatarPreview = URL.createObjectURL(file);
+        if (!file) return;
+        this.fileLoading = true;
+        this.render();
+        const validTypes = [
+            "image/png",
+            "image/jpeg"
+        ];
+        const maxSize = 2097152;
+        if (!validTypes.includes(file.type)) {
+            document.querySelector("app-toast").show("Please select a PNG or JPEG image", "error");
+            this.fileLoading = false;
             this.render();
+            return;
         }
+        if (file.size > maxSize) {
+            document.querySelector("app-toast").show("Image must be smaller than 2MB", "error");
+            this.fileLoading = false;
+            this.render();
+            return;
+        }
+        if (this.avatarPreview.startsWith("blob:")) URL.revokeObjectURL(this.avatarPreview);
+        this.selectedFile = file;
+        this.avatarPreview = URL.createObjectURL(file);
+        this.fileLoading = false;
+        this.render();
+    }
+    resetAvatarPreview() {
+        if (this.avatarPreview.startsWith("blob:")) URL.revokeObjectURL(this.avatarPreview);
+        this.selectedFile = null;
+        this.avatarPreview = this.getSafeAvatarUrl(this.user.avatar);
+        this.render();
     }
     async submitHandler(e) {
         e.preventDefault();
@@ -32448,15 +32484,21 @@ class ProfileView {
         const firstName = (0, _dompurifyDefault.default).sanitize(form.querySelector('[name="firstName"]').value.trim());
         const lastName = (0, _dompurifyDefault.default).sanitize(form.querySelector('[name="lastName"]').value.trim());
         const email = (0, _dompurifyDefault.default).sanitize(form.querySelector('[name="email"]').value.trim());
-        const bio = (0, _dompurifyDefault.default).sanitize(form.querySelector('[name="bio"]').value.trim());
-        const avatar = form.querySelector('[name="avatar"]').files[0];
+        const newPassword = form.querySelector('[name="newPassword"]').value;
+        const confirmPassword = form.querySelector('[name="confirmPassword"]').value;
+        if (newPassword && newPassword !== confirmPassword) {
+            this.passwordMismatch = true;
+            this.saving = false;
+            this.render();
+            return;
+        }
         try {
             const formData = new FormData();
             formData.append("firstName", firstName);
             formData.append("lastName", lastName);
             formData.append("email", email);
-            formData.append("bio", bio);
-            if (avatar) formData.append("avatar", avatar);
+            if (this.selectedFile) formData.append("avatar", this.selectedFile);
+            if (newPassword) formData.append("password", newPassword);
             const response = await (0, _apiFetchJsDefault.default)(`${(0, _appJsDefault.default).apiBase}/users/${(0, _authJsDefault.default).currentUser.id}`, {
                 method: "PUT",
                 body: formData
@@ -32468,186 +32510,120 @@ class ProfileView {
                 ...updatedUser
             };
             this.user = updatedUser;
-            this.avatarPreview = updatedUser.avatar.startsWith("/uploads") ? `${(0, _appJsDefault.default).apiBase}${updatedUser.avatar}` : "/images/default-avatar.png";
+            if (this.avatarPreview.startsWith("blob:")) URL.revokeObjectURL(this.avatarPreview);
+            this.avatarPreview = this.getSafeAvatarUrl(updatedUser.avatar);
+            this.selectedFile = null;
+            this.passwordMismatch = false;
             this.saving = false;
-            (0, _toastJsDefault.default).show("Profile updated");
+            document.querySelector("app-toast").show("Profile updated");
             this.render();
         } catch (err) {
             this.saving = false;
-            (0, _toastJsDefault.default).show(err.message || "Failed to update profile");
-            this.render();
-        }
-    }
-    async submitPasswordHandler(e) {
-        e.preventDefault();
-        this.passwordMismatch = false;
-        const form = e.target;
-        const currentPassword = form.querySelector('[name="currentPassword"]').value;
-        const newPassword = form.querySelector('[name="newPassword"]').value;
-        const confirmPassword = form.querySelector('[name="confirmPassword"]').value;
-        if (newPassword !== confirmPassword) {
-            this.passwordMismatch = true;
-            this.render();
-            return;
-        }
-        try {
-            const response = await (0, _apiFetchJsDefault.default)(`${(0, _appJsDefault.default).apiBase}/users/${(0, _authJsDefault.default).currentUser.id}/password`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    currentPassword,
-                    newPassword
-                })
-            });
-            if (!response.ok) throw new Error((await response.json()).message);
-            this.showPasswordDialog = false;
-            (0, _toastJsDefault.default).show("Password updated");
-            this.render();
-        } catch (err) {
-            (0, _toastJsDefault.default).show(err.message || "Failed to update password");
+            document.querySelector("app-toast").show(err.message || "Failed to update profile", "error");
+            console.error("[ProfileView] Update error:", err);
             this.render();
         }
     }
     render() {
+        if (typeof this.avatarPreview !== "string") {
+            console.warn("[ProfileView] avatarPreview is not a string:", this.avatarPreview);
+            this.avatarPreview = (0, _defaultavatarPngDefault.default);
+        }
         const template = (0, _litHtml.html)`
       <div>
         ${(0, _headerJsDefault.default).render()}
         <div class="page-content">
-          ${this.loading ? (0, _litHtml.html)`<sl-spinner></sl-spinner>` : (0, _litHtml.html)`
+          ${this.loading ? (0, _litHtml.html)`<div>Loading...</div>` : (0, _litHtml.html)`
                 <h1>Your Profile</h1>
-                <div class="form-wrapper">
-                  <form @submit=${this.submitHandler.bind(this)}>
-                    <div class="avatar-section">
-                      <img
-                        src="${(0, _dompurifyDefault.default).sanitize(this.avatarPreview)}"
-                        alt="Profile avatar"
-                        class="avatar-preview"
-                        @error=${(e)=>e.target.src = "/images/default-avatar.png"}
-                        loading="lazy"
-                      />
-                      <sl-input
+                <div class="avatar-section">
+                  <div class="avatar-wrapper">
+                    <img
+                      src="${this.avatarPreview}"
+                      alt="User Avatar"
+                      class="avatar-preview"
+                      @error=${(e)=>{
+            console.error("[ProfileView] Image load error for src:", e.target.src);
+            e.target.src = (0, _defaultavatarPngDefault.default);
+        }}
+                    />
+                  </div>
+                  <div class="avatar-controls">
+                    <label class="upload-button">
+                      <input
                         name="avatar"
                         type="file"
-                        accept="image/*"
+                        accept="image/png,image/jpeg"
                         @change=${this.handleAvatarChange.bind(this)}
-                        label="Upload Avatar"
-                      ></sl-input>
-                    </div>
-                    <sl-input
-                      name="firstName"
-                      label="First Name"
-                      value="${(0, _dompurifyDefault.default).sanitize(this.user.firstName)}"
-                      required
-                      autocomplete="given-name"
-                    ></sl-input>
-                    <sl-input
-                      name="lastName"
-                      label="Last Name"
-                      value="${(0, _dompurifyDefault.default).sanitize(this.user.lastName)}"
-                      required
-                      autocomplete="family-name"
-                    ></sl-input>
-                    <sl-input
-                      name="email"
-                      type="email"
-                      label="Email"
-                      value="${(0, _dompurifyDefault.default).sanitize(this.user.email)}"
-                      required
-                      autocomplete="email"
-                    ></sl-input>
-                    <sl-textarea
-                      name="bio"
-                      label="Bio"
-                      value="${(0, _dompurifyDefault.default).sanitize(this.user.bio)}"
-                    ></sl-textarea>
-                    <sl-button
-                      type="submit"
-                      variant="primary"
-                      ?disabled=${this.saving}
-                      ?loading=${this.saving}
-                    >
-                      Save Profile
-                    </sl-button>
-                    <sl-button
-                      variant="default"
-                      @click=${()=>{
-            this.showPasswordDialog = true;
-            this.render();
-        }}
-                    >
-                      Change Password
-                    </sl-button>
+                        ?disabled=${this.fileLoading}
+                      />
+                      <button ?disabled=${this.fileLoading}>
+                        Choose Image
+                      </button>
+                    </label>
+                    ${this.selectedFile ? (0, _litHtml.html)`
+                          <button @click=${this.resetAvatarPreview.bind(this)}>
+                            Remove Selected Image
+                          </button>
+                        ` : ""}
+                  </div>
+                </div>
+                <div class="form-wrapper">
+                  <form @submit=${this.submitHandler.bind(this)}>
+                    <label>
+                      First Name
+                      <input
+                        name="firstName"
+                        value="${(0, _dompurifyDefault.default).sanitize(this.user.firstName)}"
+                        required
+                      />
+                    </label>
+                    <label>
+                      Last Name
+                      <input
+                        name="lastName"
+                        value="${(0, _dompurifyDefault.default).sanitize(this.user.lastName)}"
+                        required
+                      />
+                    </label>
+                    <label>
+                      Email
+                      <input
+                        name="email"
+                        type="email"
+                        value="${(0, _dompurifyDefault.default).sanitize(this.user.email)}"
+                        required
+                      />
+                    </label>
+                    <label>
+                      New Password
+                      <input name="newPassword" type="password" />
+                    </label>
+                    <label>
+                      Confirm New Password
+                      <input
+                        name="confirmPassword"
+                        type="password"
+                        class=${this.passwordMismatch ? "invalid" : ""}
+                      />
+                      ${this.passwordMismatch ? (0, _litHtml.html)`<span>Passwords do not match</span>` : ""}
+                    </label>
+                    <button type="submit" ?disabled=${this.saving}>
+                      ${this.saving ? "Saving..." : "Save Changes"}
+                    </button>
                   </form>
                 </div>
-                ${this.showPasswordDialog ? (0, _litHtml.html)`
-                      <sl-dialog
-                        label="Change Password"
-                        open
-                        @sl-request-close=${()=>{
-            this.showPasswordDialog = false;
-            this.render();
-        }}
-                      >
-                        <form @submit=${this.submitPasswordHandler.bind(this)}>
-                          <sl-input
-                            name="currentPassword"
-                            type="password"
-                            label="Current Password"
-                            required
-                            autocomplete="current-password"
-                          ></sl-input>
-                          <sl-input
-                            name="newPassword"
-                            type="password"
-                            label="New Password"
-                            required
-                            autocomplete="new-password"
-                            help-text=${this.passwordMismatch ? "Passwords do not match" : ""}
-                            ?invalid=${this.passwordMismatch}
-                          ></sl-input>
-                          <sl-input
-                            name="confirmPassword"
-                            type="password"
-                            label="Confirm New Password"
-                            required
-                            autocomplete="new-password"
-                            help-text=${this.passwordMismatch ? "Passwords do not match" : ""}
-                            ?invalid=${this.passwordMismatch}
-                          ></sl-input>
-                          <sl-button
-                            slot="footer"
-                            type="submit"
-                            variant="primary"
-                          >
-                            Update Password
-                          </sl-button>
-                          <sl-button
-                            slot="footer"
-                            variant="default"
-                            @click=${()=>{
-            this.showPasswordDialog = false;
-            this.render();
-        }}
-                          >
-                            Cancel
-                          </sl-button>
-                        </form>
-                      </sl-dialog>
-                    ` : ""}
               `}
         </div>
+        <app-toast></app-toast>
       </div>
     `;
         (0, _litHtml.render)(template, (0, _appJsDefault.default).rootEl);
     }
 }
-exports.default = new ProfileView();
+exports.default = ProfileView;
 
-},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","../components/Toast.js":"eSyC4","dompurify":"1IHUz","../components/Header.js":"3PJ6N","../apiFetch.js":"96g6P","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"3PJ6N":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../App.js":"hh6uc","../Auth.js":"aJFb5","dompurify":"1IHUz","../components/Header.js":"3PJ6N","../apiFetch.js":"96g6P","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","../images/defaultavatar.png":"ejJaf"}],"3PJ6N":[function(require,module,exports,__globalThis) {
 // components/header.js
-// components/Header.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _litHtml = require("lit-html");
@@ -32655,10 +32631,17 @@ var _authJs = require("../Auth.js");
 var _authJsDefault = parcelHelpers.interopDefault(_authJs);
 var _routerJs = require("../Router.js");
 const Header = {
+    currentTab: "home",
     render () {
         const isHost = (0, _authJsDefault.default).currentUser?.accessLevel === 2;
+        // Set current tab based on current URL
+        const path = window.location.pathname;
+        if (path.includes("bookings")) this.currentTab = "bookings";
+        else if (path.includes("profile")) this.currentTab = "profile";
+        else this.currentTab = "home";
         return (0, _litHtml.html)`
       <header class="site-header">
+        <div class="image-overlay"></div>
         <div class="header-content">
           <div
             class="logo"
@@ -32669,32 +32652,29 @@ const Header = {
             Chinwag
           </div>
 
-          <sl-tab-group class="nav-tabs">
-            <sl-tab
-              slot="nav"
-              panel="home"
+          <nav class="nav-tabs">
+            <button
+              class="nav-tab ${this.currentTab === "home" ? "active" : ""}"
               @click=${()=>(0, _routerJs.gotoRoute)(isHost ? "/host-home" : "/guest-home")}
             >
               Home
-            </sl-tab>
-            <sl-tab
-              slot="nav"
-              panel="bookings"
+            </button>
+            <button
+              class="nav-tab ${this.currentTab === "bookings" ? "active" : ""}"
               @click=${()=>(0, _routerJs.gotoRoute)(isHost ? "/host-bookings" : "/guest-bookings")}
             >
               Bookings
-            </sl-tab>
-            <sl-tab
-              slot="nav"
-              panel="profile"
+            </button>
+            <button
+              class="nav-tab ${this.currentTab === "profile" ? "active" : ""}"
               @click=${()=>(0, _routerJs.gotoRoute)("/profile")}
             >
               Profile
-            </sl-tab>
-            <sl-tab slot="nav" panel="logout" @click=${()=>(0, _authJsDefault.default).signOut()}>
+            </button>
+            <button class="nav-tab" @click=${()=>(0, _authJsDefault.default).signOut()}>
               Logout
-            </sl-tab>
-          </sl-tab-group>
+            </button>
+          </nav>
         </div>
       </header>
     `;
@@ -32702,7 +32682,7 @@ const Header = {
 };
 exports.default = Header;
 
-},{"lit-html":"l15as","../Auth.js":"aJFb5","../Router.js":"b5tFI","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"kXOFZ":[function(require,module,exports,__globalThis) {
+},{"lit-html":"l15as","../Auth.js":"aJFb5","../Router.js":"b5tFI","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"ejJaf":[function() {},{}],"kXOFZ":[function(require,module,exports,__globalThis) {
 // views/GuestHome.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -32774,13 +32754,13 @@ class GuestHomeView {
       <div>
         ${(0, _headerJsDefault.default).render()}
         <div class="page-content">
-          <h1 class="guest-home-title">Have a chinwag...</h1>
+          <h1 class="title">Have a chinwag...</h1>
 
           <div class="tab-bar">
             <sl-tab-group @sl-tab-show=${this.handleTabChange}>
               <sl-tab
                 slot="nav"
-                class="tab ${this.filter === "all" ? "active" : ""}"
+                class="page-tab ${this.filter === "all" ? "active" : ""}"
                 panel="all"
                 ?active=${this.filter === "all"}
               >
@@ -32788,7 +32768,7 @@ class GuestHomeView {
               </sl-tab>
               <sl-tab
                 slot="nav"
-                class="tab ${this.filter === "weekend" ? "active" : ""}"
+                class="page-tab ${this.filter === "weekend" ? "active" : ""}"
                 panel="weekend"
                 ?active=${this.filter === "weekend"}
               >
@@ -32796,7 +32776,7 @@ class GuestHomeView {
               </sl-tab>
               <sl-tab
                 slot="nav"
-                class="tab ${this.filter === "nextWeek" ? "active" : ""}"
+                class="page-tab ${this.filter === "nextWeek" ? "active" : ""}"
                 panel="nextWeek"
                 ?active=${this.filter === "nextWeek"}
               >
@@ -33067,10 +33047,28 @@ class GuestBookingsView {
         ${(0, _headerJsDefault.default).render()}
         <div class="page-content">
           <h1>Your Bookings</h1>
-          <sl-tab-group @sl-tab-show=${this.handleTabClick.bind(this)}>
-            <sl-tab slot="nav" panel="Upcoming" active>Upcoming</sl-tab>
-            <sl-tab slot="nav" panel="Past">Past</sl-tab>
-          </sl-tab-group>
+
+          <div class="tab-bar">
+            <sl-tab-group @sl-tab-show=${this.handleTabClick.bind(this)}>
+              <sl-tab
+                class="page-tab"
+                slot="nav"
+                panel="Upcoming"
+                ?active=${this.activeFilter === "Upcoming"}
+              >
+                Upcoming
+              </sl-tab>
+              <sl-tab
+                class="page-tab"
+                slot="nav"
+                panel="Past"
+                ?active=${this.activeFilter === "Past"}
+              >
+                Past
+              </sl-tab>
+            </sl-tab-group>
+          </div>
+
           ${this.loading ? (0, _litHtml.html)`<sl-spinner></sl-spinner>` : filteredBookings.length === 0 ? (0, _litHtml.html)`<p>No ${this.activeFilter.toLowerCase()} bookings found.</p>` : (0, _litHtml.html)`
                 <div class="booking-grid">
                   ${filteredBookings.map((booking)=>(0, _litHtml.html)`
@@ -33271,10 +33269,10 @@ class HostBookingsView {
                           <sl-card class="booking-card">
                             <div slot="header">
                               <img
-                                src="${(0, _dompurifyDefault.default).sanitize(booking.guest.avatar.startsWith("/uploads") ? `${(0, _appJsDefault.default).apiBase}${booking.guest.avatar}` : `/images/default-avatar.png`)}"
+                                src="${(0, _dompurifyDefault.default).sanitize(booking.guest.avatar.startsWith("/uploads") ? `${(0, _appJsDefault.default).apiBase}${booking.guest.avatar}` : `/images/defaultavatar.png`)}"
                                 alt="Avatar for ${(0, _dompurifyDefault.default).sanitize(booking.guest.firstName)}"
                                 class="avatar"
-                                @error=${(e)=>e.target.src = `/images/default-avatar.png`}
+                                @error=${(e)=>e.target.src = `/images/defaultavatar.png`}
                                 loading="lazy"
                               />
                               <span

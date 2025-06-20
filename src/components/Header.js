@@ -1,15 +1,23 @@
 // components/header.js
-// components/Header.js
+
 import { html } from "lit-html";
 import Auth from "../Auth.js";
 import { gotoRoute } from "../Router.js";
 
 const Header = {
+  currentTab: "home",
   render() {
     const isHost = Auth.currentUser?.accessLevel === 2;
 
+    // Set current tab based on current URL
+    const path = window.location.pathname;
+    if (path.includes("bookings")) this.currentTab = "bookings";
+    else if (path.includes("profile")) this.currentTab = "profile";
+    else this.currentTab = "home";
+
     return html`
       <header class="site-header">
+        <div class="image-overlay"></div>
         <div class="header-content">
           <div
             class="logo"
@@ -20,33 +28,30 @@ const Header = {
             Chinwag
           </div>
 
-          <sl-tab-group class="nav-tabs">
-            <sl-tab
-              slot="nav"
-              panel="home"
+          <nav class="nav-tabs">
+            <button
+              class="nav-tab ${this.currentTab === "home" ? "active" : ""}"
               @click=${() => gotoRoute(isHost ? "/host-home" : "/guest-home")}
             >
               Home
-            </sl-tab>
-            <sl-tab
-              slot="nav"
-              panel="bookings"
+            </button>
+            <button
+              class="nav-tab ${this.currentTab === "bookings" ? "active" : ""}"
               @click=${() =>
                 gotoRoute(isHost ? "/host-bookings" : "/guest-bookings")}
             >
               Bookings
-            </sl-tab>
-            <sl-tab
-              slot="nav"
-              panel="profile"
+            </button>
+            <button
+              class="nav-tab ${this.currentTab === "profile" ? "active" : ""}"
               @click=${() => gotoRoute("/profile")}
             >
               Profile
-            </sl-tab>
-            <sl-tab slot="nav" panel="logout" @click=${() => Auth.signOut()}>
+            </button>
+            <button class="nav-tab" @click=${() => Auth.signOut()}>
               Logout
-            </sl-tab>
-          </sl-tab-group>
+            </button>
+          </nav>
         </div>
       </header>
     `;

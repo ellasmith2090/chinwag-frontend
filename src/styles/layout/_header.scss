@@ -3,7 +3,7 @@
 @use "../abstracts/variables" as vars;
 
 .site-header {
-  background-image: url("../../images/header.png");
+  background-image: url("/src/images/header.png");
   background-size: cover;
   background-position: center;
   color: vars.$white;
@@ -21,13 +21,12 @@
 }
 
 .logo {
-  font-size: 5rem;
+  font-size: 6rem;
   font-family: vars.$font-title;
   font-weight: 700;
   letter-spacing: -1px;
   color: vars.$white;
   cursor: pointer;
-  text-transform: uppercase;
   transition: all 0.3s ease;
 
   &:hover {
@@ -35,37 +34,34 @@
   }
 }
 
-.nav-tabs {
-  --sl-color-primary-600: vars.$white;
-  --sl-color-neutral-0: transparent;
-  display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
+.nav-tab {
+  appearance: none;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: vars.$font-heading;
+  font-size: 1.4rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: vars.$white;
+  letter-spacing: 0.5px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  transition: color 0.3s ease, border-color 0.3s ease;
+
+  &:hover {
+    color: vars.$secondary;
+  }
+
+  &.active {
+    color: vars.$secondary;
+    border-bottom: 2px solid vars.$secondary;
+  }
 
   @media (max-width: vars.$bp-mobile) {
     flex-wrap: wrap;
     justify-content: center;
   }
-}
-
-.nav-tabs::part(tabs) {
-  border-bottom: none;
-}
-
-.nav-tabs::part(active-tab-indicator) {
-  display: none;
-}
-
-sl-tab {
-  color: vars.$white;
-  padding: 10px 20px;
-  cursor: pointer;
-  font-size: 1.4rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-family: vars.$font-heading;
-}
-
-sl-tab:hover {
-  background-color: rgba(255, 255, 255, 0.1);
 }

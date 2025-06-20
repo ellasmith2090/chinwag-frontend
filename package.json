@@ -1,23 +1,20 @@
 {
   "name": "chinwag-frontend",
   "version": "1.0.0",
- "scripts": {
-  "start": "parcel src/index.html",
-  "dev": "parcel src/index.html",
-  "build": "parcel build src/index.html",
-  "clean": "rm -rf dist .parcel-cache"
-},
+  "scripts": {
+    "start": "parcel src/index.html",
+    "dev": "parcel src/index.html",
+    "build": "parcel build src/index.html",
+    "clean": "rm -rf dist .parcel-cache"
+  },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.12.0",
-    "parcel": "^2.15.2",
+    "parcel": "^2.12.0",
     "sass": "^1.77.0"
   },
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "dependencies": {
-    "@shoelace-style/shoelace": "^2.20.1",
-    "dompurify": "^3.2.6",
-    "lit": "^3.3.0",
-    "lit-html": "^3.3.0",
-    "navigo": "^8.11.1"
+    "dompurify": "^3.1.6",
+    "lit": "^2.8.0"
   }
 }

@@ -86,10 +86,28 @@ class GuestBookingsView {
         ${Header.render()}
         <div class="page-content">
           <h1>Your Bookings</h1>
-          <sl-tab-group @sl-tab-show=${this.handleTabClick.bind(this)}>
-            <sl-tab slot="nav" panel="Upcoming" active>Upcoming</sl-tab>
-            <sl-tab slot="nav" panel="Past">Past</sl-tab>
-          </sl-tab-group>
+
+          <div class="tab-bar">
+            <sl-tab-group @sl-tab-show=${this.handleTabClick.bind(this)}>
+              <sl-tab
+                class="page-tab"
+                slot="nav"
+                panel="Upcoming"
+                ?active=${this.activeFilter === "Upcoming"}
+              >
+                Upcoming
+              </sl-tab>
+              <sl-tab
+                class="page-tab"
+                slot="nav"
+                panel="Past"
+                ?active=${this.activeFilter === "Past"}
+              >
+                Past
+              </sl-tab>
+            </sl-tab-group>
+          </div>
+
           ${this.loading
             ? html`<sl-spinner></sl-spinner>`
             : filteredBookings.length === 0

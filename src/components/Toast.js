@@ -1,4 +1,5 @@
 // Toast.js
+
 import { html, render } from "lit-html";
 
 const Toast = {

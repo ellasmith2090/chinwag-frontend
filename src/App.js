@@ -13,8 +13,11 @@ const App = {
 
   async init() {
     this.rootEl = document.getElementById("root");
-    if (!this.rootEl) throw new Error("Root element #root not found");
-    console.log("[App] Initialising...");
+    if (!this.rootEl) {
+      console.error("[App] Root element #root not found");
+      throw new Error("Root element #root not found");
+    }
+    console.log("[App] Initialising with apiBase:", this.apiBase);
     await Router.init();
   },
 };
