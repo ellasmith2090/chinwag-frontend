@@ -31,6 +31,17 @@ const Router = {
     const path = window.location.pathname;
     console.log("[Router] Routing to:", path);
     const View = this.routes[path] || SignInView;
+    console.log("[Router] View:", View);
+    if (typeof View !== "function") {
+      console.error(
+        "[Router] Error: View is not a constructor for path:",
+        path,
+        "View:",
+        View
+      );
+      document.querySelector("app-toast")?.show("Failed to load page", "error");
+      return;
+    }
     const isAuthenticated = await Auth.check();
     if (!isAuthenticated && !["/signin", "/signup"].includes(path)) {
       gotoRoute("/signin");
@@ -63,9 +74,14 @@ const Router = {
         return;
       }
     }
-    const view = new View();
-    view.init();
-    view.render();
+    try {
+      const view = new View();
+      view.init();
+      view.render();
+    } catch (err) {
+      console.error("[Router] Error instantiating view for path:", path, err);
+      document.querySelector("app-toast")?.show("Failed to load page", "error");
+    }
   },
 };
 

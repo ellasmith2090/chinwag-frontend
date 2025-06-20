@@ -1,7 +1,6 @@
 // auth.js
 
 import { gotoRoute } from "./Router.js";
-import Toast from "./components/Toast.js";
 import App from "./App.js";
 
 const Auth = {
@@ -33,7 +32,7 @@ const Auth = {
       const { accessToken, user } = await response.json();
       localStorage.setItem("token", accessToken);
       this.currentUser = user;
-      Toast.show("Welcome back!");
+      document.querySelector("app-toast")?.show("Welcome back!", "info");
 
       gotoRoute(
         user.isFirstLogin
@@ -82,7 +81,7 @@ const Auth = {
       const { accessToken, user } = await response.json();
       localStorage.setItem("token", accessToken);
       this.currentUser = user;
-      Toast.show("Account created!");
+      document.querySelector("app-toast")?.show("Account created!", "info");
       gotoRoute(user.accessLevel === 1 ? "/guest-guide" : "/host-guide");
     } catch (err) {
       console.error("[Auth] signUp failed:", err.message);
@@ -121,12 +120,11 @@ const Auth = {
   signOut() {
     localStorage.removeItem("token");
     this.currentUser = null;
-    Toast.show("Signed out");
+    document.querySelector("app-toast")?.show("Signed out", "info");
     gotoRoute("/signin");
   },
 };
 
-// 👇 Utility for checking if token is expired (can be reused in apiFetch)
 export function isTokenExpired(token) {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));

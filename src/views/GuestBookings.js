@@ -30,9 +30,12 @@ class GuestBookingsView {
       this.render();
     } catch (err) {
       this.loading = false;
-      document
-        .querySelector("app-toast")
-        ?.show("Error fetching bookings", "error");
+      const toast = document.querySelector("app-toast");
+      if (toast) {
+        toast.show("Error fetching bookings", "error");
+      } else {
+        console.warn("[GuestBookings.js] Toast not available:", err.message);
+      }
       console.error(err);
       this.render();
     }
@@ -59,13 +62,23 @@ class GuestBookingsView {
         }
       );
       if (!response.ok) throw new Error("Failed to cancel booking");
-      document.querySelector("app-toast")?.show("Booking cancelled", "info");
+      const toast = document.querySelector("app-toast");
+      if (toast) {
+        toast.show("Booking cancelled", "info");
+      } else {
+        console.warn(
+          "[GuestBookings.js] Toast not available: Booking cancelled"
+        );
+      }
       this.cancellingBookingId = null;
       this.fetchBookings();
     } catch (err) {
-      document
-        .querySelector("app-toast")
-        ?.show(err.message || "Failed to cancel booking", "error");
+      const toast = document.querySelector("app-toast");
+      if (toast) {
+        toast.show(err.message || "Failed to cancel booking", "error");
+      } else {
+        console.warn("[GuestBookings.js] Toast not available:", err.message);
+      }
       console.error(err);
       this.cancellingBookingId = null;
       this.render();

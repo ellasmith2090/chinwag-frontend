@@ -757,6 +757,12 @@ const Router = {
         const path = window.location.pathname;
         console.log("[Router] Routing to:", path);
         const View = this.routes[path] || (0, _signInJsDefault.default);
+        console.log("[Router] View:", View);
+        if (typeof View !== "function") {
+            console.error("[Router] Error: View is not a constructor for path:", path, "View:", View);
+            document.querySelector("app-toast")?.show("Failed to load page", "error");
+            return;
+        }
         const isAuthenticated = await (0, _authJsDefault.default).check();
         if (!isAuthenticated && ![
             "/signin",
@@ -792,9 +798,14 @@ const Router = {
                 return;
             }
         }
-        const view = new View();
-        view.init();
-        view.render();
+        try {
+            const view = new View();
+            view.init();
+            view.render();
+        } catch (err) {
+            console.error("[Router] Error instantiating view for path:", path, err);
+            document.querySelector("app-toast")?.show("Failed to load page", "error");
+        }
     }
 };
 function gotoRoute(path) {
@@ -1257,11 +1268,8 @@ exports.export = function(dest, destName, get) {
 // auth.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-// 👇 Utility for checking if token is expired (can be reused in apiFetch)
 parcelHelpers.export(exports, "isTokenExpired", ()=>isTokenExpired);
 var _routerJs = require("./Router.js");
-var _toastJs = require("./components/Toast.js");
-var _toastJsDefault = parcelHelpers.interopDefault(_toastJs);
 var _appJs = require("./App.js");
 var _appJsDefault = parcelHelpers.interopDefault(_appJs);
 const Auth = {
@@ -1292,7 +1300,7 @@ const Auth = {
             const { accessToken, user } = await response.json();
             localStorage.setItem("token", accessToken);
             this.currentUser = user;
-            (0, _toastJsDefault.default).show("Welcome back!");
+            document.querySelector("app-toast")?.show("Welcome back!", "info");
             (0, _routerJs.gotoRoute)(user.isFirstLogin ? user.accessLevel === 1 ? "/guest-guide" : "/host-guide" : user.accessLevel === 1 ? "/guest-home" : "/host-home");
         } catch (err) {
             console.error("[Auth] signIn failed:", err.message);
@@ -1328,7 +1336,7 @@ const Auth = {
             const { accessToken, user } = await response.json();
             localStorage.setItem("token", accessToken);
             this.currentUser = user;
-            (0, _toastJsDefault.default).show("Account created!");
+            document.querySelector("app-toast")?.show("Account created!", "info");
             (0, _routerJs.gotoRoute)(user.accessLevel === 1 ? "/guest-guide" : "/host-guide");
         } catch (err) {
             console.error("[Auth] signUp failed:", err.message);
@@ -1364,7 +1372,7 @@ const Auth = {
     signOut () {
         localStorage.removeItem("token");
         this.currentUser = null;
-        (0, _toastJsDefault.default).show("Signed out");
+        document.querySelector("app-toast")?.show("Signed out", "info");
         (0, _routerJs.gotoRoute)("/signin");
     }
 };
@@ -1379,420 +1387,7 @@ function isTokenExpired(token) {
 }
 exports.default = Auth;
 
-},{"./Router.js":"b5tFI","./components/Toast.js":"eSyC4","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"eSyC4":[function(require,module,exports,__globalThis) {
-// Toast.js
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _lit = require("lit");
-class AppToast extends (0, _lit.LitElement) {
-    static properties = {
-        message: {
-            type: String
-        },
-        type: {
-            type: String,
-            attribute: "data-type"
-        },
-        visible: {
-            type: Boolean,
-            reflect: true
-        }
-    };
-    constructor(){
-        super();
-        this.message = "";
-        this.type = "info";
-        this.visible = false;
-    }
-    show(message, type = "info") {
-        this.message = message;
-        this.type = type;
-        this.visible = true;
-        setTimeout(()=>{
-            this.visible = false;
-        }, 3000);
-    }
-    render() {
-        return (0, _lit.html)`<span>${this.message}</span>`;
-    }
-}
-// Prevent multiple registrations
-if (!customElements.get("app-toast")) customElements.define("app-toast", AppToast);
-exports.default = AppToast;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","lit":"hh14x"}],"hh14x":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _reactiveElement = require("@lit/reactive-element");
-var _litHtml = require("lit-html");
-var _litElementJs = require("lit-element/lit-element.js");
-parcelHelpers.exportAll(_litElementJs, exports);
-var _isServerJs = require("lit-html/is-server.js");
-parcelHelpers.exportAll(_isServerJs, exports);
-
-},{"@lit/reactive-element":"c9cs8","lit-html":"l15as","lit-element/lit-element.js":"aJ236","lit-html/is-server.js":"4BoSu","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"c9cs8":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "CSSResult", ()=>(0, _cssTagJs.CSSResult));
-parcelHelpers.export(exports, "adoptStyles", ()=>(0, _cssTagJs.adoptStyles));
-parcelHelpers.export(exports, "css", ()=>(0, _cssTagJs.css));
-parcelHelpers.export(exports, "getCompatibleStyle", ()=>(0, _cssTagJs.getCompatibleStyle));
-parcelHelpers.export(exports, "supportsAdoptingStyleSheets", ()=>(0, _cssTagJs.supportsAdoptingStyleSheets));
-parcelHelpers.export(exports, "unsafeCSS", ()=>(0, _cssTagJs.unsafeCSS));
-parcelHelpers.export(exports, "ReactiveElement", ()=>u);
-parcelHelpers.export(exports, "defaultConverter", ()=>n);
-parcelHelpers.export(exports, "notEqual", ()=>a);
-var _cssTagJs = require("./css-tag.js");
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */ var s;
-const e = window, r = e.trustedTypes, h = r ? r.emptyScript : "", o = e.reactiveElementPolyfillSupport, n = {
-    toAttribute (t, i) {
-        switch(i){
-            case Boolean:
-                t = t ? h : null;
-                break;
-            case Object:
-            case Array:
-                t = null == t ? t : JSON.stringify(t);
-        }
-        return t;
-    },
-    fromAttribute (t, i) {
-        let s = t;
-        switch(i){
-            case Boolean:
-                s = null !== t;
-                break;
-            case Number:
-                s = null === t ? null : Number(t);
-                break;
-            case Object:
-            case Array:
-                try {
-                    s = JSON.parse(t);
-                } catch (t) {
-                    s = null;
-                }
-        }
-        return s;
-    }
-}, a = (t, i)=>i !== t && (i == i || t == t), l = {
-    attribute: !0,
-    type: String,
-    converter: n,
-    reflect: !1,
-    hasChanged: a
-}, d = "finalized";
-class u extends HTMLElement {
-    constructor(){
-        super(), this._$Ei = new Map, this.isUpdatePending = !1, this.hasUpdated = !1, this._$El = null, this._$Eu();
-    }
-    static addInitializer(t) {
-        var i;
-        this.finalize(), (null !== (i = this.h) && void 0 !== i ? i : this.h = []).push(t);
-    }
-    static get observedAttributes() {
-        this.finalize();
-        const t = [];
-        return this.elementProperties.forEach((i, s)=>{
-            const e = this._$Ep(s, i);
-            void 0 !== e && (this._$Ev.set(e, s), t.push(e));
-        }), t;
-    }
-    static createProperty(t, i = l) {
-        if (i.state && (i.attribute = !1), this.finalize(), this.elementProperties.set(t, i), !i.noAccessor && !this.prototype.hasOwnProperty(t)) {
-            const s = "symbol" == typeof t ? Symbol() : "__" + t, e = this.getPropertyDescriptor(t, s, i);
-            void 0 !== e && Object.defineProperty(this.prototype, t, e);
-        }
-    }
-    static getPropertyDescriptor(t, i, s) {
-        return {
-            get () {
-                return this[i];
-            },
-            set (e) {
-                const r = this[t];
-                this[i] = e, this.requestUpdate(t, r, s);
-            },
-            configurable: !0,
-            enumerable: !0
-        };
-    }
-    static getPropertyOptions(t) {
-        return this.elementProperties.get(t) || l;
-    }
-    static finalize() {
-        if (this.hasOwnProperty(d)) return !1;
-        this[d] = !0;
-        const t = Object.getPrototypeOf(this);
-        if (t.finalize(), void 0 !== t.h && (this.h = [
-            ...t.h
-        ]), this.elementProperties = new Map(t.elementProperties), this._$Ev = new Map, this.hasOwnProperty("properties")) {
-            const t = this.properties, i = [
-                ...Object.getOwnPropertyNames(t),
-                ...Object.getOwnPropertySymbols(t)
-            ];
-            for (const s of i)this.createProperty(s, t[s]);
-        }
-        return this.elementStyles = this.finalizeStyles(this.styles), !0;
-    }
-    static finalizeStyles(i) {
-        const s = [];
-        if (Array.isArray(i)) {
-            const e = new Set(i.flat(1 / 0).reverse());
-            for (const i of e)s.unshift((0, _cssTagJs.getCompatibleStyle)(i));
-        } else void 0 !== i && s.push((0, _cssTagJs.getCompatibleStyle)(i));
-        return s;
-    }
-    static _$Ep(t, i) {
-        const s = i.attribute;
-        return !1 === s ? void 0 : "string" == typeof s ? s : "string" == typeof t ? t.toLowerCase() : void 0;
-    }
-    _$Eu() {
-        var t;
-        this._$E_ = new Promise((t)=>this.enableUpdating = t), this._$AL = new Map, this._$Eg(), this.requestUpdate(), null === (t = this.constructor.h) || void 0 === t || t.forEach((t)=>t(this));
-    }
-    addController(t) {
-        var i, s;
-        (null !== (i = this._$ES) && void 0 !== i ? i : this._$ES = []).push(t), void 0 !== this.renderRoot && this.isConnected && (null === (s = t.hostConnected) || void 0 === s || s.call(t));
-    }
-    removeController(t) {
-        var i;
-        null === (i = this._$ES) || void 0 === i || i.splice(this._$ES.indexOf(t) >>> 0, 1);
-    }
-    _$Eg() {
-        this.constructor.elementProperties.forEach((t, i)=>{
-            this.hasOwnProperty(i) && (this._$Ei.set(i, this[i]), delete this[i]);
-        });
-    }
-    createRenderRoot() {
-        var t;
-        const s = null !== (t = this.shadowRoot) && void 0 !== t ? t : this.attachShadow(this.constructor.shadowRootOptions);
-        return (0, _cssTagJs.adoptStyles)(s, this.constructor.elementStyles), s;
-    }
-    connectedCallback() {
-        var t;
-        void 0 === this.renderRoot && (this.renderRoot = this.createRenderRoot()), this.enableUpdating(!0), null === (t = this._$ES) || void 0 === t || t.forEach((t)=>{
-            var i;
-            return null === (i = t.hostConnected) || void 0 === i ? void 0 : i.call(t);
-        });
-    }
-    enableUpdating(t) {}
-    disconnectedCallback() {
-        var t;
-        null === (t = this._$ES) || void 0 === t || t.forEach((t)=>{
-            var i;
-            return null === (i = t.hostDisconnected) || void 0 === i ? void 0 : i.call(t);
-        });
-    }
-    attributeChangedCallback(t, i, s) {
-        this._$AK(t, s);
-    }
-    _$EO(t, i, s = l) {
-        var e;
-        const r = this.constructor._$Ep(t, s);
-        if (void 0 !== r && !0 === s.reflect) {
-            const h = (void 0 !== (null === (e = s.converter) || void 0 === e ? void 0 : e.toAttribute) ? s.converter : n).toAttribute(i, s.type);
-            this._$El = t, null == h ? this.removeAttribute(r) : this.setAttribute(r, h), this._$El = null;
-        }
-    }
-    _$AK(t, i) {
-        var s;
-        const e = this.constructor, r = e._$Ev.get(t);
-        if (void 0 !== r && this._$El !== r) {
-            const t = e.getPropertyOptions(r), h = "function" == typeof t.converter ? {
-                fromAttribute: t.converter
-            } : void 0 !== (null === (s = t.converter) || void 0 === s ? void 0 : s.fromAttribute) ? t.converter : n;
-            this._$El = r, this[r] = h.fromAttribute(i, t.type), this._$El = null;
-        }
-    }
-    requestUpdate(t, i, s) {
-        let e = !0;
-        void 0 !== t && (((s = s || this.constructor.getPropertyOptions(t)).hasChanged || a)(this[t], i) ? (this._$AL.has(t) || this._$AL.set(t, i), !0 === s.reflect && this._$El !== t && (void 0 === this._$EC && (this._$EC = new Map), this._$EC.set(t, s))) : e = !1), !this.isUpdatePending && e && (this._$E_ = this._$Ej());
-    }
-    async _$Ej() {
-        this.isUpdatePending = !0;
-        try {
-            await this._$E_;
-        } catch (t) {
-            Promise.reject(t);
-        }
-        const t = this.scheduleUpdate();
-        return null != t && await t, !this.isUpdatePending;
-    }
-    scheduleUpdate() {
-        return this.performUpdate();
-    }
-    performUpdate() {
-        var t;
-        if (!this.isUpdatePending) return;
-        this.hasUpdated, this._$Ei && (this._$Ei.forEach((t, i)=>this[i] = t), this._$Ei = void 0);
-        let i = !1;
-        const s = this._$AL;
-        try {
-            i = this.shouldUpdate(s), i ? (this.willUpdate(s), null === (t = this._$ES) || void 0 === t || t.forEach((t)=>{
-                var i;
-                return null === (i = t.hostUpdate) || void 0 === i ? void 0 : i.call(t);
-            }), this.update(s)) : this._$Ek();
-        } catch (t) {
-            throw i = !1, this._$Ek(), t;
-        }
-        i && this._$AE(s);
-    }
-    willUpdate(t) {}
-    _$AE(t) {
-        var i;
-        null === (i = this._$ES) || void 0 === i || i.forEach((t)=>{
-            var i;
-            return null === (i = t.hostUpdated) || void 0 === i ? void 0 : i.call(t);
-        }), this.hasUpdated || (this.hasUpdated = !0, this.firstUpdated(t)), this.updated(t);
-    }
-    _$Ek() {
-        this._$AL = new Map, this.isUpdatePending = !1;
-    }
-    get updateComplete() {
-        return this.getUpdateComplete();
-    }
-    getUpdateComplete() {
-        return this._$E_;
-    }
-    shouldUpdate(t) {
-        return !0;
-    }
-    update(t) {
-        void 0 !== this._$EC && (this._$EC.forEach((t, i)=>this._$EO(i, this[i], t)), this._$EC = void 0), this._$Ek();
-    }
-    updated(t) {}
-    firstUpdated(t) {}
-}
-u[d] = !0, u.elementProperties = new Map, u.elementStyles = [], u.shadowRootOptions = {
-    mode: "open"
-}, null == o || o({
-    ReactiveElement: u
-}), (null !== (s = e.reactiveElementVersions) && void 0 !== s ? s : e.reactiveElementVersions = []).push("1.6.3");
-
-},{"./css-tag.js":"8ZIf7","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8ZIf7":[function(require,module,exports,__globalThis) {
-/**
- * @license
- * Copyright 2019 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "CSSResult", ()=>o);
-parcelHelpers.export(exports, "adoptStyles", ()=>S);
-parcelHelpers.export(exports, "css", ()=>i);
-parcelHelpers.export(exports, "getCompatibleStyle", ()=>c);
-parcelHelpers.export(exports, "supportsAdoptingStyleSheets", ()=>e);
-parcelHelpers.export(exports, "unsafeCSS", ()=>r);
-const t = window, e = t.ShadowRoot && (void 0 === t.ShadyCSS || t.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, s = Symbol(), n = new WeakMap;
-class o {
-    constructor(t, e, n){
-        if (this._$cssResult$ = !0, n !== s) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
-        this.cssText = t, this.t = e;
-    }
-    get styleSheet() {
-        let t = this.o;
-        const s = this.t;
-        if (e && void 0 === t) {
-            const e = void 0 !== s && 1 === s.length;
-            e && (t = n.get(s)), void 0 === t && ((this.o = t = new CSSStyleSheet).replaceSync(this.cssText), e && n.set(s, t));
-        }
-        return t;
-    }
-    toString() {
-        return this.cssText;
-    }
-}
-const r = (t)=>new o("string" == typeof t ? t : t + "", void 0, s), i = (t, ...e)=>{
-    const n = 1 === t.length ? t[0] : e.reduce((e, s, n)=>e + ((t)=>{
-            if (!0 === t._$cssResult$) return t.cssText;
-            if ("number" == typeof t) return t;
-            throw Error("Value passed to 'css' function must be a 'css' function result: " + t + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
-        })(s) + t[n + 1], t[0]);
-    return new o(n, t, s);
-}, S = (s, n)=>{
-    e ? s.adoptedStyleSheets = n.map((t)=>t instanceof CSSStyleSheet ? t : t.styleSheet) : n.forEach((e)=>{
-        const n = document.createElement("style"), o = t.litNonce;
-        void 0 !== o && n.setAttribute("nonce", o), n.textContent = e.cssText, s.appendChild(n);
-    });
-}, c = e ? (t)=>t : (t)=>t instanceof CSSStyleSheet ? ((t)=>{
-        let e = "";
-        for (const s of t.cssRules)e += s.cssText;
-        return r(e);
-    })(t) : t;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"aJ236":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "LitElement", ()=>s);
-parcelHelpers.export(exports, "UpdatingElement", ()=>r);
-parcelHelpers.export(exports, "_$LE", ()=>h);
-var _reactiveElement = require("@lit/reactive-element");
-parcelHelpers.exportAll(_reactiveElement, exports);
-var _litHtml = require("lit-html");
-parcelHelpers.exportAll(_litHtml, exports);
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */ var l, o;
-const r = (0, _reactiveElement.ReactiveElement);
-class s extends (0, _reactiveElement.ReactiveElement) {
-    constructor(){
-        super(...arguments), this.renderOptions = {
-            host: this
-        }, this._$Do = void 0;
-    }
-    createRenderRoot() {
-        var t, e;
-        const i = super.createRenderRoot();
-        return null !== (t = (e = this.renderOptions).renderBefore) && void 0 !== t || (e.renderBefore = i.firstChild), i;
-    }
-    update(t) {
-        const i = this.render();
-        this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t), this._$Do = (0, _litHtml.render)(i, this.renderRoot, this.renderOptions);
-    }
-    connectedCallback() {
-        var t;
-        super.connectedCallback(), null === (t = this._$Do) || void 0 === t || t.setConnected(!0);
-    }
-    disconnectedCallback() {
-        var t;
-        super.disconnectedCallback(), null === (t = this._$Do) || void 0 === t || t.setConnected(!1);
-    }
-    render() {
-        return 0, _litHtml.noChange;
-    }
-}
-s.finalized = !0, s._$litElement$ = !0, null === (l = globalThis.litElementHydrateSupport) || void 0 === l || l.call(globalThis, {
-    LitElement: s
-});
-const n = globalThis.litElementPolyfillSupport;
-null == n || n({
-    LitElement: s
-});
-const h = {
-    _$AK: (t, e, i)=>{
-        t._$AK(e, i);
-    },
-    _$AL: (t)=>t._$AL
-};
-(null !== (o = globalThis.litElementVersions) && void 0 !== o ? o : globalThis.litElementVersions = []).push("3.3.3");
-
-},{"@lit/reactive-element":"c9cs8","lit-html":"l15as","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4BoSu":[function(require,module,exports,__globalThis) {
-/**
- * @license
- * Copyright 2022 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "isServer", ()=>o);
-const o = !1;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jPeMQ":[function(require,module,exports,__globalThis) {
+},{"./Router.js":"b5tFI","./App.js":"hh6uc","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"jPeMQ":[function(require,module,exports,__globalThis) {
 // views/signup.js
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -4480,7 +4075,9 @@ class GuestBookingsView {
             this.render();
         } catch (err) {
             this.loading = false;
-            document.querySelector("app-toast")?.show("Error fetching bookings", "error");
+            const toast = document.querySelector("app-toast");
+            if (toast) toast.show("Error fetching bookings", "error");
+            else console.warn("[GuestBookings.js] Toast not available:", err.message);
             console.error(err);
             this.render();
         }
@@ -4503,11 +4100,15 @@ class GuestBookingsView {
                 }
             });
             if (!response.ok) throw new Error("Failed to cancel booking");
-            document.querySelector("app-toast")?.show("Booking cancelled", "info");
+            const toast = document.querySelector("app-toast");
+            if (toast) toast.show("Booking cancelled", "info");
+            else console.warn("[GuestBookings.js] Toast not available: Booking cancelled");
             this.cancellingBookingId = null;
             this.fetchBookings();
         } catch (err) {
-            document.querySelector("app-toast")?.show(err.message || "Failed to cancel booking", "error");
+            const toast = document.querySelector("app-toast");
+            if (toast) toast.show(err.message || "Failed to cancel booking", "error");
+            else console.warn("[GuestBookings.js] Toast not available:", err.message);
             console.error(err);
             this.cancellingBookingId = null;
             this.render();
@@ -4878,6 +4479,441 @@ class AppHeader extends (0, _lit.LitElement) {
 customElements.define("app-header", AppHeader);
 exports.default = AppHeader;
 
-},{"lit":"hh14x","../Auth.js":"aJFb5","../Router.js":"b5tFI","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}]},["iUuJv","fILKw"], "fILKw", "parcelRequire42eb", {})
+},{"lit":"hh14x","../Auth.js":"aJFb5","../Router.js":"b5tFI","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"hh14x":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _reactiveElement = require("@lit/reactive-element");
+var _litHtml = require("lit-html");
+var _litElementJs = require("lit-element/lit-element.js");
+parcelHelpers.exportAll(_litElementJs, exports);
+var _isServerJs = require("lit-html/is-server.js");
+parcelHelpers.exportAll(_isServerJs, exports);
+
+},{"@lit/reactive-element":"c9cs8","lit-html":"l15as","lit-element/lit-element.js":"aJ236","lit-html/is-server.js":"4BoSu","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"c9cs8":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "CSSResult", ()=>(0, _cssTagJs.CSSResult));
+parcelHelpers.export(exports, "adoptStyles", ()=>(0, _cssTagJs.adoptStyles));
+parcelHelpers.export(exports, "css", ()=>(0, _cssTagJs.css));
+parcelHelpers.export(exports, "getCompatibleStyle", ()=>(0, _cssTagJs.getCompatibleStyle));
+parcelHelpers.export(exports, "supportsAdoptingStyleSheets", ()=>(0, _cssTagJs.supportsAdoptingStyleSheets));
+parcelHelpers.export(exports, "unsafeCSS", ()=>(0, _cssTagJs.unsafeCSS));
+parcelHelpers.export(exports, "ReactiveElement", ()=>u);
+parcelHelpers.export(exports, "defaultConverter", ()=>n);
+parcelHelpers.export(exports, "notEqual", ()=>a);
+var _cssTagJs = require("./css-tag.js");
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */ var s;
+const e = window, r = e.trustedTypes, h = r ? r.emptyScript : "", o = e.reactiveElementPolyfillSupport, n = {
+    toAttribute (t, i) {
+        switch(i){
+            case Boolean:
+                t = t ? h : null;
+                break;
+            case Object:
+            case Array:
+                t = null == t ? t : JSON.stringify(t);
+        }
+        return t;
+    },
+    fromAttribute (t, i) {
+        let s = t;
+        switch(i){
+            case Boolean:
+                s = null !== t;
+                break;
+            case Number:
+                s = null === t ? null : Number(t);
+                break;
+            case Object:
+            case Array:
+                try {
+                    s = JSON.parse(t);
+                } catch (t) {
+                    s = null;
+                }
+        }
+        return s;
+    }
+}, a = (t, i)=>i !== t && (i == i || t == t), l = {
+    attribute: !0,
+    type: String,
+    converter: n,
+    reflect: !1,
+    hasChanged: a
+}, d = "finalized";
+class u extends HTMLElement {
+    constructor(){
+        super(), this._$Ei = new Map, this.isUpdatePending = !1, this.hasUpdated = !1, this._$El = null, this._$Eu();
+    }
+    static addInitializer(t) {
+        var i;
+        this.finalize(), (null !== (i = this.h) && void 0 !== i ? i : this.h = []).push(t);
+    }
+    static get observedAttributes() {
+        this.finalize();
+        const t = [];
+        return this.elementProperties.forEach((i, s)=>{
+            const e = this._$Ep(s, i);
+            void 0 !== e && (this._$Ev.set(e, s), t.push(e));
+        }), t;
+    }
+    static createProperty(t, i = l) {
+        if (i.state && (i.attribute = !1), this.finalize(), this.elementProperties.set(t, i), !i.noAccessor && !this.prototype.hasOwnProperty(t)) {
+            const s = "symbol" == typeof t ? Symbol() : "__" + t, e = this.getPropertyDescriptor(t, s, i);
+            void 0 !== e && Object.defineProperty(this.prototype, t, e);
+        }
+    }
+    static getPropertyDescriptor(t, i, s) {
+        return {
+            get () {
+                return this[i];
+            },
+            set (e) {
+                const r = this[t];
+                this[i] = e, this.requestUpdate(t, r, s);
+            },
+            configurable: !0,
+            enumerable: !0
+        };
+    }
+    static getPropertyOptions(t) {
+        return this.elementProperties.get(t) || l;
+    }
+    static finalize() {
+        if (this.hasOwnProperty(d)) return !1;
+        this[d] = !0;
+        const t = Object.getPrototypeOf(this);
+        if (t.finalize(), void 0 !== t.h && (this.h = [
+            ...t.h
+        ]), this.elementProperties = new Map(t.elementProperties), this._$Ev = new Map, this.hasOwnProperty("properties")) {
+            const t = this.properties, i = [
+                ...Object.getOwnPropertyNames(t),
+                ...Object.getOwnPropertySymbols(t)
+            ];
+            for (const s of i)this.createProperty(s, t[s]);
+        }
+        return this.elementStyles = this.finalizeStyles(this.styles), !0;
+    }
+    static finalizeStyles(i) {
+        const s = [];
+        if (Array.isArray(i)) {
+            const e = new Set(i.flat(1 / 0).reverse());
+            for (const i of e)s.unshift((0, _cssTagJs.getCompatibleStyle)(i));
+        } else void 0 !== i && s.push((0, _cssTagJs.getCompatibleStyle)(i));
+        return s;
+    }
+    static _$Ep(t, i) {
+        const s = i.attribute;
+        return !1 === s ? void 0 : "string" == typeof s ? s : "string" == typeof t ? t.toLowerCase() : void 0;
+    }
+    _$Eu() {
+        var t;
+        this._$E_ = new Promise((t)=>this.enableUpdating = t), this._$AL = new Map, this._$Eg(), this.requestUpdate(), null === (t = this.constructor.h) || void 0 === t || t.forEach((t)=>t(this));
+    }
+    addController(t) {
+        var i, s;
+        (null !== (i = this._$ES) && void 0 !== i ? i : this._$ES = []).push(t), void 0 !== this.renderRoot && this.isConnected && (null === (s = t.hostConnected) || void 0 === s || s.call(t));
+    }
+    removeController(t) {
+        var i;
+        null === (i = this._$ES) || void 0 === i || i.splice(this._$ES.indexOf(t) >>> 0, 1);
+    }
+    _$Eg() {
+        this.constructor.elementProperties.forEach((t, i)=>{
+            this.hasOwnProperty(i) && (this._$Ei.set(i, this[i]), delete this[i]);
+        });
+    }
+    createRenderRoot() {
+        var t;
+        const s = null !== (t = this.shadowRoot) && void 0 !== t ? t : this.attachShadow(this.constructor.shadowRootOptions);
+        return (0, _cssTagJs.adoptStyles)(s, this.constructor.elementStyles), s;
+    }
+    connectedCallback() {
+        var t;
+        void 0 === this.renderRoot && (this.renderRoot = this.createRenderRoot()), this.enableUpdating(!0), null === (t = this._$ES) || void 0 === t || t.forEach((t)=>{
+            var i;
+            return null === (i = t.hostConnected) || void 0 === i ? void 0 : i.call(t);
+        });
+    }
+    enableUpdating(t) {}
+    disconnectedCallback() {
+        var t;
+        null === (t = this._$ES) || void 0 === t || t.forEach((t)=>{
+            var i;
+            return null === (i = t.hostDisconnected) || void 0 === i ? void 0 : i.call(t);
+        });
+    }
+    attributeChangedCallback(t, i, s) {
+        this._$AK(t, s);
+    }
+    _$EO(t, i, s = l) {
+        var e;
+        const r = this.constructor._$Ep(t, s);
+        if (void 0 !== r && !0 === s.reflect) {
+            const h = (void 0 !== (null === (e = s.converter) || void 0 === e ? void 0 : e.toAttribute) ? s.converter : n).toAttribute(i, s.type);
+            this._$El = t, null == h ? this.removeAttribute(r) : this.setAttribute(r, h), this._$El = null;
+        }
+    }
+    _$AK(t, i) {
+        var s;
+        const e = this.constructor, r = e._$Ev.get(t);
+        if (void 0 !== r && this._$El !== r) {
+            const t = e.getPropertyOptions(r), h = "function" == typeof t.converter ? {
+                fromAttribute: t.converter
+            } : void 0 !== (null === (s = t.converter) || void 0 === s ? void 0 : s.fromAttribute) ? t.converter : n;
+            this._$El = r, this[r] = h.fromAttribute(i, t.type), this._$El = null;
+        }
+    }
+    requestUpdate(t, i, s) {
+        let e = !0;
+        void 0 !== t && (((s = s || this.constructor.getPropertyOptions(t)).hasChanged || a)(this[t], i) ? (this._$AL.has(t) || this._$AL.set(t, i), !0 === s.reflect && this._$El !== t && (void 0 === this._$EC && (this._$EC = new Map), this._$EC.set(t, s))) : e = !1), !this.isUpdatePending && e && (this._$E_ = this._$Ej());
+    }
+    async _$Ej() {
+        this.isUpdatePending = !0;
+        try {
+            await this._$E_;
+        } catch (t) {
+            Promise.reject(t);
+        }
+        const t = this.scheduleUpdate();
+        return null != t && await t, !this.isUpdatePending;
+    }
+    scheduleUpdate() {
+        return this.performUpdate();
+    }
+    performUpdate() {
+        var t;
+        if (!this.isUpdatePending) return;
+        this.hasUpdated, this._$Ei && (this._$Ei.forEach((t, i)=>this[i] = t), this._$Ei = void 0);
+        let i = !1;
+        const s = this._$AL;
+        try {
+            i = this.shouldUpdate(s), i ? (this.willUpdate(s), null === (t = this._$ES) || void 0 === t || t.forEach((t)=>{
+                var i;
+                return null === (i = t.hostUpdate) || void 0 === i ? void 0 : i.call(t);
+            }), this.update(s)) : this._$Ek();
+        } catch (t) {
+            throw i = !1, this._$Ek(), t;
+        }
+        i && this._$AE(s);
+    }
+    willUpdate(t) {}
+    _$AE(t) {
+        var i;
+        null === (i = this._$ES) || void 0 === i || i.forEach((t)=>{
+            var i;
+            return null === (i = t.hostUpdated) || void 0 === i ? void 0 : i.call(t);
+        }), this.hasUpdated || (this.hasUpdated = !0, this.firstUpdated(t)), this.updated(t);
+    }
+    _$Ek() {
+        this._$AL = new Map, this.isUpdatePending = !1;
+    }
+    get updateComplete() {
+        return this.getUpdateComplete();
+    }
+    getUpdateComplete() {
+        return this._$E_;
+    }
+    shouldUpdate(t) {
+        return !0;
+    }
+    update(t) {
+        void 0 !== this._$EC && (this._$EC.forEach((t, i)=>this._$EO(i, this[i], t)), this._$EC = void 0), this._$Ek();
+    }
+    updated(t) {}
+    firstUpdated(t) {}
+}
+u[d] = !0, u.elementProperties = new Map, u.elementStyles = [], u.shadowRootOptions = {
+    mode: "open"
+}, null == o || o({
+    ReactiveElement: u
+}), (null !== (s = e.reactiveElementVersions) && void 0 !== s ? s : e.reactiveElementVersions = []).push("1.6.3");
+
+},{"./css-tag.js":"8ZIf7","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"8ZIf7":[function(require,module,exports,__globalThis) {
+/**
+ * @license
+ * Copyright 2019 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "CSSResult", ()=>o);
+parcelHelpers.export(exports, "adoptStyles", ()=>S);
+parcelHelpers.export(exports, "css", ()=>i);
+parcelHelpers.export(exports, "getCompatibleStyle", ()=>c);
+parcelHelpers.export(exports, "supportsAdoptingStyleSheets", ()=>e);
+parcelHelpers.export(exports, "unsafeCSS", ()=>r);
+const t = window, e = t.ShadowRoot && (void 0 === t.ShadyCSS || t.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, s = Symbol(), n = new WeakMap;
+class o {
+    constructor(t, e, n){
+        if (this._$cssResult$ = !0, n !== s) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+        this.cssText = t, this.t = e;
+    }
+    get styleSheet() {
+        let t = this.o;
+        const s = this.t;
+        if (e && void 0 === t) {
+            const e = void 0 !== s && 1 === s.length;
+            e && (t = n.get(s)), void 0 === t && ((this.o = t = new CSSStyleSheet).replaceSync(this.cssText), e && n.set(s, t));
+        }
+        return t;
+    }
+    toString() {
+        return this.cssText;
+    }
+}
+const r = (t)=>new o("string" == typeof t ? t : t + "", void 0, s), i = (t, ...e)=>{
+    const n = 1 === t.length ? t[0] : e.reduce((e, s, n)=>e + ((t)=>{
+            if (!0 === t._$cssResult$) return t.cssText;
+            if ("number" == typeof t) return t;
+            throw Error("Value passed to 'css' function must be a 'css' function result: " + t + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
+        })(s) + t[n + 1], t[0]);
+    return new o(n, t, s);
+}, S = (s, n)=>{
+    e ? s.adoptedStyleSheets = n.map((t)=>t instanceof CSSStyleSheet ? t : t.styleSheet) : n.forEach((e)=>{
+        const n = document.createElement("style"), o = t.litNonce;
+        void 0 !== o && n.setAttribute("nonce", o), n.textContent = e.cssText, s.appendChild(n);
+    });
+}, c = e ? (t)=>t : (t)=>t instanceof CSSStyleSheet ? ((t)=>{
+        let e = "";
+        for (const s of t.cssRules)e += s.cssText;
+        return r(e);
+    })(t) : t;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"aJ236":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "LitElement", ()=>s);
+parcelHelpers.export(exports, "UpdatingElement", ()=>r);
+parcelHelpers.export(exports, "_$LE", ()=>h);
+var _reactiveElement = require("@lit/reactive-element");
+parcelHelpers.exportAll(_reactiveElement, exports);
+var _litHtml = require("lit-html");
+parcelHelpers.exportAll(_litHtml, exports);
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */ var l, o;
+const r = (0, _reactiveElement.ReactiveElement);
+class s extends (0, _reactiveElement.ReactiveElement) {
+    constructor(){
+        super(...arguments), this.renderOptions = {
+            host: this
+        }, this._$Do = void 0;
+    }
+    createRenderRoot() {
+        var t, e;
+        const i = super.createRenderRoot();
+        return null !== (t = (e = this.renderOptions).renderBefore) && void 0 !== t || (e.renderBefore = i.firstChild), i;
+    }
+    update(t) {
+        const i = this.render();
+        this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t), this._$Do = (0, _litHtml.render)(i, this.renderRoot, this.renderOptions);
+    }
+    connectedCallback() {
+        var t;
+        super.connectedCallback(), null === (t = this._$Do) || void 0 === t || t.setConnected(!0);
+    }
+    disconnectedCallback() {
+        var t;
+        super.disconnectedCallback(), null === (t = this._$Do) || void 0 === t || t.setConnected(!1);
+    }
+    render() {
+        return 0, _litHtml.noChange;
+    }
+}
+s.finalized = !0, s._$litElement$ = !0, null === (l = globalThis.litElementHydrateSupport) || void 0 === l || l.call(globalThis, {
+    LitElement: s
+});
+const n = globalThis.litElementPolyfillSupport;
+null == n || n({
+    LitElement: s
+});
+const h = {
+    _$AK: (t, e, i)=>{
+        t._$AK(e, i);
+    },
+    _$AL: (t)=>t._$AL
+};
+(null !== (o = globalThis.litElementVersions) && void 0 !== o ? o : globalThis.litElementVersions = []).push("3.3.3");
+
+},{"@lit/reactive-element":"c9cs8","lit-html":"l15as","@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"4BoSu":[function(require,module,exports,__globalThis) {
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "isServer", ()=>o);
+const o = !1;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT"}],"eSyC4":[function(require,module,exports,__globalThis) {
+// Toast.js
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _lit = require("lit");
+class AppToast extends (0, _lit.LitElement) {
+    static styles = (0, _lit.css)`
+    :host {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 24px;
+      border-radius: 4px;
+      color: white;
+      font-family: var(--font-stack);
+      display: none;
+      z-index: 1000;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    :host([visible]) {
+      display: block;
+    }
+    :host([data-type="info"]) {
+      background-color: var(--toast-bg, #4caf50);
+    }
+    :host([data-type="error"]) {
+      background-color: #f44336;
+    }
+  `;
+    static properties = {
+        message: {
+            type: String
+        },
+        type: {
+            type: String,
+            attribute: "data-type"
+        },
+        visible: {
+            type: Boolean,
+            reflect: true
+        }
+    };
+    constructor(){
+        super();
+        this.message = "";
+        this.type = "info";
+        this.visible = false;
+    }
+    show(message, type = "info") {
+        this.message = message;
+        this.type = type;
+        this.visible = true;
+        setTimeout(()=>{
+            this.visible = false;
+        }, 3000);
+    }
+    render() {
+        return (0, _lit.html)`<span>${this.message}</span>`;
+    }
+}
+if (!customElements.get("app-toast")) customElements.define("app-toast", AppToast);
+exports.default = AppToast;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"jnFvT","lit":"hh14x"}]},["iUuJv","fILKw"], "fILKw", "parcelRequire42eb", {})
 
 //# sourceMappingURL=frontend.1fcc916e.js.map
